@@ -1,7 +1,7 @@
 # Constitution — Andenken
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.2.0
+> **Versão:** 1.4.0
 > **Produto:** Andenken — flash cards com CRUD + repetição espaçada SM-2
 
 Este documento é a fonte de princípios do projeto. `spec.md`, `plan.md` e `tasks.md` devem respeitá-lo. Em conflito, a constitution vence.
@@ -92,7 +92,8 @@ Use-cases contra **fakes** in-memory (interfaces da T023). Sem mock do SDK Fireb
 - Deck: só `name` + timestamps. Sem descrição, cor ou capa.
 - Delete: hard delete (Deck apaga os Cards da subcoleção).
 - Sem `ReviewLog` na v1.
-- Plataformas-alvo: iOS e Android. Web/desktop não são critério de aceite da v1.
+- Plataformas-alvo: Android. Sem Firebase/config iOS na v1. Web/desktop e iOS não são critério de aceite.
+- Flavors: `develop`, `homolog`, `prod`. Mesmo Firebase (`andenken-ed808`) e mesmo `applicationId` na v1.
 - Offline: persistência local padrão do Firestore no mobile; sem modo offline customizado.
 - UI: tokens e layout do Stitch (MCP). Sem merge cego do export Flutter. Sem Figma como fonte oficial.
 - TDD: use-case e notifier de regra não entram em `lib/` sem teste vermelho prévio. Sem Firebase emulator nem meta de 100% coverage na v1.
@@ -110,7 +111,8 @@ Estas perguntas estavam abertas no planejamento. Ficam registradas aqui para nã
 | RN-06 (fila no mesmo dia até `grade >= 4`) | Dentro | Está no spec do algoritmo; faz parte da sessão de estudo |
 | Delete | Hard delete | Soft delete exige campo extra e queries filtradas |
 | Deck `description` | Não | Só `name` |
-| Plataformas | iOS + Android | App móvel; web não é aceite |
+| Plataformas | Android only | iOS fica para depois; pasta `ios/` do Flutter pode existir sem Firebase |
+| Flavors | develop / homolog / prod, mesmo Firebase | Separação no app agora; projetos distintos depois |
 | Offline | Persistência default do Firestore | Zero código extra; online-only quebraria o estudo no metrô |
 | Fonte visual | Google Stitch + MCP | Handoff com screenshot/HTML/`DESIGN.md`; spec manda no comportamento |
 | Testes | TDD no domínio e notifiers; fakes; UI depois do verde | P-01: sem emulator/coverage theater |

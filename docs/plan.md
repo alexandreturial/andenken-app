@@ -1,7 +1,7 @@
 # Plan técnico — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.2.0
+> **Versão:** 1.4.0
 > **Produto:** [`spec.md`](spec.md)
 > **Princípios:** [`constitution.md`](constitution.md)
 
@@ -15,7 +15,9 @@ Este documento define *como* construir a v1. Não substitui o spec.
 |------|---------|
 | App | Flutter (projeto existente `andenken_app`, hoje scaffold) |
 | SDK | Dart `^3.12.1` (já no `pubspec.yaml`) |
-| Alvos v1 | iOS e Android |
+| Alvos v1 | Android (`com.turial_dev.andenken.app`). Sem Firebase no iOS. |
+| Firebase project | `andenken-ed808` (os três flavors apontam para este projeto na v1) |
+| Flavors | `develop`, `homolog`, `prod` — mesmo `applicationId` e mesmo Firebase |
 | Backend | Firebase Auth + Cloud Firestore |
 | Estado | `ValueNotifier` + `ValueListenableBuilder` |
 | DI | `provider` (somente injeção) |
@@ -109,6 +111,50 @@ test/
 
 Agente: para cada task de regra, o primeiro commit (ou o primeiro passo) é o teste vermelho. Não pular o vermelho.
 
+### 1.3 Flavors (develop / homolog / prod)
+
+Separação de **ambiente no app**, não de backend. Na v1 os três flavors usam o mesmo projeto Firebase (`andenken-ed808`) e o mesmo Android app (`com.turial_dev.andenken.app`). Não usar `applicationIdSuffix` ainda — isso exigiria três apps no Firebase e três entradas no `google-services.json`.
+
+| Flavor | Nome visível | Firebase | `applicationId` |
+|--------|--------------|----------|-----------------|
+| `develop` | Andenken Dev | `andenken-ed808` | `com.turial_dev.andenken.app` |
+| `homolog` | Andenken Homolog | `andenken-ed808` | `com.turial_dev.andenken.app` |
+| `prod` | Andenken | `andenken-ed808` | `com.turial_dev.andenken.app` |
+
+Consequência: não dá para instalar os três APKs no mesmo device ao mesmo tempo (mesmo id). A separação serve para banner, logs, e para trocar de projeto Firebase depois sem refazer a estrutura.
+
+#### Android (`app/build.gradle.kts`)
+
+Uma `flavorDimension` `"environment"` e três `productFlavors` com os nomes acima. `resValue` de `app_name` por flavor. `namespace` e `applicationId` iguais nos três.
+
+Com flavors definidos, `flutter run` **sem** `--flavor` falha. Comando padrão da v1:
+
+```bash
+flutter run --flavor develop --dart-define=FLAVOR=develop
+flutter run --flavor homolog --dart-define=FLAVOR=homolog
+flutter run --flavor prod --dart-define=FLAVOR=prod
+```
+
+`flutter test` não exige flavor.
+
+#### Dart
+
+`lib/core/flavor/flavor.dart`:
+
+- enum `AppFlavor { develop, homolog, prod }`
+- `FlavorConfig` lido de `String.fromEnvironment('FLAVOR', defaultValue: 'develop')`
+- getters: `isProd`, `showFlavorBanner` (true se não for `prod`)
+
+Um único `main.dart` e um único `firebase_options.dart`. Sem `main_develop.dart` / `main_prod.dart` na v1.
+
+UI: banner discreto (Dev / Homolog) fora de prod — não precisa frame Stitch.
+
+#### Depois da v1 (não fazer agora)
+
+- `applicationIdSuffix` (`.dev`, `.homolog`) + registrar apps extras no Firebase
+- Projetos Firebase separados por flavor
+- Flavors iOS (schemes/xcconfig)
+
 ---
 
 ## 2. Arquitetura
@@ -169,6 +215,8 @@ lib/
   app.dart
   firebase_options.dart          # gerado pelo FlutterFire CLI
   core/
+    flavor/
+      flavor.dart                # AppFlavor + FlavorConfig
     router/
       app_router.dart
     theme/
@@ -418,10 +466,21 @@ Fora do código, mas bloqueia o app:
 1. Criar projeto Firebase.
 2. Ativar Auth email/senha.
 3. Criar Firestore (modo produção + regras acima).
-4. `flutterfire configure` → `firebase_options.dart` (arquivo gerado, não commitar segredos de service account).
-5. Apps iOS/Android com os IDs já existentes:
-   - Android: `com.turial_dev.andenken.andenken_app`
-   - iOS: `com.turialdev.andenken.andenkenApp`
+4. `flutterfire configure` **somente Android** → `lib/firebase_options.dart` (não commitar service account).
+5. App Android no Firebase com o mesmo `applicationId` do Gradle:
+   - Android: `com.turial_dev.andenken.app`
+   - Sem app iOS, sem `GoogleService-Info.plist` na v1.
+
+```bash
+flutterfire configure --project=andenken-ed808 \
+  --platforms=android \
+  --android-package-name=com.turial_dev.andenken.app \
+  --yes
+```
+
+O Gradle precisa de `applicationId = "com.turial_dev.andenken.app"` (não o id antigo `...andenken_app`). A pasta `ios/` do scaffold pode permanecer; `flutter run` em iOS **não** é aceite da v1.
+
+Os flavors `develop` / `homolog` / `prod` **não** mudam o projeto Firebase na v1. `Firebase.initializeApp` usa o mesmo `DefaultFirebaseOptions` em todos. Ver §1.3.
 
 ---
 
@@ -429,7 +488,7 @@ Fora do código, mas bloqueia o app:
 
 Resumo; o detalhe está em [`tasks.md`](tasks.md).
 
-1. Firebase + pacotes + `core/` (init, theme a partir do Stitch, router vazio).
+1. Firebase + pacotes + flavors (`develop`/`homolog`/`prod`) + `core/` (init, theme a partir do Stitch, router vazio).
 2. Domain em TDD: entidades + fakes + testes vermelhos do SM-2 + `ApplySM2` verde.
 3. Auth: use-cases TDD (fake) → Firebase → telas Stitch.
 4. Decks CRUD no mesmo ciclo.
@@ -447,6 +506,10 @@ Resumo; o detalhe está em [`tasks.md`](tasks.md).
 | Delete Deck sem cascade nativo | Apagar Cards no use-case |
 | Conflito de nome `Card` | Import prefixado |
 | `firebase_options` ausente no clone | `tasks.md` inclui o passo FlutterFire |
+| `flutter run` no iOS | Fora da v1; `firebase_options` só tem Android |
+| `applicationId` ≠ `com.turial_dev.andenken.app` | Gradle e `google-services.json` precisam do mesmo package |
+| `flutter run` sem `--flavor` | Depois da T017, sempre passar `--flavor` + `--dart-define=FLAVOR=` |
+| `applicationIdSuffix` cedo demais | Quebra o `google-services.json` (um só package). Só depois de apps extras no Firebase |
 | Relógio / fuso no due | Sempre “fim do dia local do device”, uma função só |
 | MCP Stitch indisponível | Fallback PNG + `DESIGN.md`; não bloquear domínio/SM-2 |
 | Stitch diverge do spec (ex.: 4 botões) | Spec vence; ajustar o frame depois |
@@ -464,3 +527,5 @@ Resumo; o detalhe está em [`tasks.md`](tasks.md).
 - Versionar a API key do MCP
 - Exigir Firebase emulator ou 100% de coverage na v1
 - TDD de layout Stitch (pixel-perfect)
+- Configurar Firebase no iOS (`GoogleService-Info.plist`) na v1
+- Projetos Firebase ou `applicationId` diferentes por flavor na v1

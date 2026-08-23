@@ -7,9 +7,9 @@
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:361762132325:android:744c1d0db4488964c6118c",
+        "mobilesdk_app_id": "1:361762132325:android:1c513c714a2d3469c6118c",
         "android_client_info": {
-          "package_name": "com.andenken.app"
+          "package_name": "com.turial_dev.andenken.app"
         }
       },
       "oauth_client": [],

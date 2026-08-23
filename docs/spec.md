@@ -1,7 +1,7 @@
 # Spec — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.2.0
+> **Versão:** 1.4.0
 > **Princípios:** [`constitution.md`](constitution.md)
 > **Algoritmo:** [`algoritmo-SM-2.md`](algoritmo-SM-2.md)
 
@@ -338,7 +338,8 @@ User → logout → /login
 - `ReviewLog`
 - Import/export Anki
 - Temas, i18n além de pt-BR
-- Web e desktop como alvo oficial
+- Web, desktop e iOS como alvo oficial (iOS sem Firebase na v1)
+- Projetos Firebase ou applicationIds distintos por flavor
 - Soft delete
 - Mover card entre decks
 - Notificações push de due

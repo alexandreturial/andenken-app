@@ -1,7 +1,7 @@
 # Tasks — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.2.0
+> **Versão:** 1.4.0
 > **Spec:** [`spec.md`](spec.md)
 > **Plan:** [`plan.md`](plan.md)
 > **Algoritmo:** [`algoritmo-SM-2.md`](algoritmo-SM-2.md)
@@ -12,12 +12,12 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fase 0 — Firebase e pacotes
 
-- [ ] **T000** Criar projeto Firebase; ativar Email/Password e Firestore.
-- [ ] **T001** Registrar apps Android (`com.turial_dev.andenken.andenken_app`) e iOS (`com.turialdev.andenken.andenkenApp`).
-- [ ] **T002** Rodar FlutterFire CLI e gerar `lib/firebase_options.dart`.
-- [ ] **T003** Publicar regras de Firestore do [`plan.md`](plan.md) §6.3.
-- [ ] **T004** Adicionar ao `pubspec.yaml`: `firebase_core`, `firebase_auth`, `cloud_firestore`, `provider`, `go_router`, `uuid`.
-- [ ] **T005** `flutter pub get` e garantir build iOS/Android com Firebase init (ainda pode ser o counter).
+- [x] **T000** Criar projeto Firebase; ativar Email/Password e Firestore.
+- [x] **T001** Registrar app Android `com.turial_dev.andenken.app` no projeto `andenken-ed808`. Sem app iOS.
+- [x] **T002** `flutterfire configure --project=andenken-ed808 --platforms=android --android-package-name=com.turial_dev.andenken.app` e gerar `lib/firebase_options.dart`.
+- [x] **T003** Publicar regras de Firestore do [`plan.md`](plan.md) §6.3.
+- [x] **T004** Adicionar ao `pubspec.yaml`: `firebase_core`, `firebase_auth`, `cloud_firestore`, `provider`, `go_router`, `uuid`.
+- [x] **T005** `flutter pub get` e garantir `flutter run` no **Android** com Firebase init (ainda pode ser o counter). Sem `GoogleService-Info.plist`.
 
 ---
 
@@ -30,6 +30,7 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 - [ ] **T014** Remover a tela do counter e o teste que incrementa o counter (ou reescrever depois).
 - [ ] **T015** `MultiProvider` vazio em `app.dart` (será preenchido nas fases 3–4).
 - [ ] **T016** Confirmar no [`spec.md`](spec.md) §7.1 os nomes exatos de cada frame Stitch ↔ rota (MCP `stitch`).
+- [ ] **T017** Flavors Android `develop` / `homolog` / `prod` (plan §1.3): `productFlavors`, `FlavorConfig`, banner Dev/Homolog. Mesmo `applicationId` e mesmo Firebase. Sem `applicationIdSuffix`. Depois disto: `flutter run --flavor develop --dart-define=FLAVOR=develop`.
 
 ---
 
@@ -102,7 +103,7 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fase 7 — Fechamento
 
-- [ ] **T070** Passe manual US-01 a US-06 no iOS ou Android.
+- [ ] **T070** Passe manual US-01 a US-06 no Android.
 - [ ] **T071** Duas contas: confirmar isolamento (critério de sucesso 4).
 - [ ] **T072** Matar o app e reabrir: `nextReviewAt` e EF persistidos (critério 2).
 - [ ] **T073** Conferir que a UI não contém fórmula SM-2.
@@ -113,9 +114,11 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fora desta lista (não fazer na v1)
 
-- ReviewLog, imagens, share, login social, web como alvo, soft delete, i18n extra, push.
+- ReviewLog, imagens, share, login social, web/iOS como alvo, soft delete, i18n extra, push.
 - Merge do export Flutter/HTML do Stitch em `lib/`.
 - Firebase emulator, mockito obrigatório, TDD de layout Stitch, meta de 100% coverage.
+- `GoogleService-Info.plist` / FlutterFire no iOS.
+- `applicationIdSuffix` ou projeto Firebase por flavor.
 
 ---
 
