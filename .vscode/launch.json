@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Andenken · develop",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--flavor",
+        "develop",
+        "--dart-define=FLAVOR=develop"
+      ]
+    },
+    {
+      "name": "Andenken · homolog",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--flavor",
+        "homolog",
+        "--dart-define=FLAVOR=homolog"
+      ]
+    },
+    {
+      "name": "Andenken · prod",
+      "request": "launch",
+      "type": "dart",
+      "program": "lib/main.dart",
+      "toolArgs": [
+        "--flavor",
+        "prod",
+        "--dart-define=FLAVOR=prod"
+      ]
+    }
+  ]
+}

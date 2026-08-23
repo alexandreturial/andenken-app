@@ -247,29 +247,29 @@ Rotas autenticadas exigem User. Rotas `/login` e `/register` exigem Visitante.
 
 ### 7.1 Mapeamento Stitch
 
-Fonte visual oficial: Google Stitch via MCP (`stitch`). Confirmar os nomes **exatos** dos frames na T016.
+Fonte visual oficial: Google Stitch via MCP (`stitch`). Tokens em [`docs/stitch/DESIGN.md`](stitch/DESIGN.md) → `lib/core/theme/app_theme.dart`.
 
-Projeto Stitch: Andenken (preencher URL/id do projeto quando existir).
+Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 
-| Tela no Stitch (nome sugerido) | Rota | Screen / estado |
-|--------------------------------|------|-----------------|
-| Login | `/login` | `LoginScreen` |
-| Cadastro | `/register` | `RegisterScreen` |
-| Lista de decks | `/decks` | `DeckListScreen` |
-| Lista de decks vazia | `/decks` | empty state |
-| Novo deck | `/decks/new` | `DeckFormScreen` (create) |
-| Renomear deck | `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
-| Detalhe do deck | `/decks/:deckId` | `DeckDetailScreen` |
-| Detalhe sem cards | `/decks/:deckId` | empty state |
-| Novo card | `/decks/:deckId/cards/new` | `CardFormScreen` (create) |
-| Editar card | `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
-| Estudo — frente | `/decks/:deckId/study` | fase `front` |
-| Estudo — verso | `/decks/:deckId/study` | fase `back` |
-| Estudo — fim | `/decks/:deckId/study` | fase `done` |
-| Estudo — vazio | `/decks/:deckId/study` | fase `empty` |
-| Confirmar exclusão | dialog | overlay, não é rota |
+| Tela no Stitch (nome exato) | Rota | Screen / estado |
+|-----------------------------|------|-----------------|
+| *(ainda sem frame)* | `/login` | `LoginScreen` |
+| *(ainda sem frame)* | `/register` | `RegisterScreen` |
+| Lista de Decks (Clean) | `/decks` | `DeckListScreen` |
+| Lista de Decks | `/decks` | variante mais densa; preferir Clean |
+| *(empty state ainda sem frame)* | `/decks` | empty state |
+| Cadastrar Decks (Clean) | `/decks/new` | `DeckFormScreen` (create) |
+| *(ainda sem frame)* | `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
+| Visualização de Card | `/decks/:deckId` | `DeckDetailScreen` (aproxima; não há “detalhe do deck”) |
+| *(empty state ainda sem frame)* | `/decks/:deckId` | empty state |
+| Cadastrar Múltiplos Cards (Clean) | `/decks/:deckId/cards/new` | `CardFormScreen` (create; spec é 1 card, não lote) |
+| Cadastrar Decks e Cards | `/decks/new` + cards | fluxo combinado; v1 separa as rotas |
+| *(ainda sem frame)* | `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
+| Estudo de Cards (Clean) | `/decks/:deckId/study` | fases `front` / `back` (texto) |
+| *(fim / vazio ainda sem frame)* | `/decks/:deckId/study` | fases `done` / `empty` |
+| *(ainda sem frame)* | dialog | confirmar exclusão |
 
-Se o Stitch tiver tela fora desta tabela (onboarding, share, stats, login social), não implementar na v1.
+**Fora da v1** (existem no Stitch, não implementar): Estudo de Cards - Áudio, Estudo de Cards - Imagem, Estudo de Cards - Áudio + Imagem, Andenken Logo (asset), frames `image.png`.
 
 **Sessão de estudo (estados da tela):**
 

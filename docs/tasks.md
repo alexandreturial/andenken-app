@@ -23,14 +23,14 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fase 1 — Esqueleto do app
 
-- [ ] **T010** Criar pastas `lib/core`, `lib/domain`, `lib/data`, `lib/presentation` e `test/fakes`, `test/domain`, `test/presentation` conforme [`plan.md`](plan.md) §3 e §1.2.
-- [ ] **T011** Extrair `MyApp` do counter para `lib/app.dart`; `main.dart` só inicializa Firebase e chama `runApp`.
-- [ ] **T012** Theme a partir do `DESIGN.md` / tokens do Stitch MCP em `core/theme/app_theme.dart` (cores, tipo, radius, espaçamento; pt-BR).
-- [ ] **T013** `GoRouter` com rotas do plan e redirect stub (ainda sem Auth).
-- [ ] **T014** Remover a tela do counter e o teste que incrementa o counter (ou reescrever depois).
-- [ ] **T015** `MultiProvider` vazio em `app.dart` (será preenchido nas fases 3–4).
-- [ ] **T016** Confirmar no [`spec.md`](spec.md) §7.1 os nomes exatos de cada frame Stitch ↔ rota (MCP `stitch`).
-- [ ] **T017** Flavors Android `develop` / `homolog` / `prod` (plan §1.3): `productFlavors`, `FlavorConfig`, banner Dev/Homolog. Mesmo `applicationId` e mesmo Firebase. Sem `applicationIdSuffix`. Depois disto: `flutter run --flavor develop --dart-define=FLAVOR=develop`.
+- [x] **T010** Criar pastas `lib/core`, `lib/domain`, `lib/data`, `lib/presentation` e `test/fakes`, `test/domain`, `test/presentation` conforme [`plan.md`](plan.md) §3 e §1.2.
+- [x] **T011** Extrair `MyApp` do counter para `lib/app.dart`; `main.dart` só inicializa Firebase e chama `runApp`.
+- [x] **T012** Theme a partir do `DESIGN.md` / tokens do Stitch MCP em `core/theme/app_theme.dart` (cores, tipo, radius, espaçamento; pt-BR).
+- [x] **T013** `GoRouter` com rotas do plan e redirect stub (ainda sem Auth).
+- [x] **T014** Remover a tela do counter e o teste que incrementa o counter (ou reescrever depois).
+- [x] **T015** `MultiProvider` vazio em `app.dart` (será preenchido nas fases 3–4).
+- [x] **T016** Confirmar no [`spec.md`](spec.md) §7.1 os nomes exatos de cada frame Stitch ↔ rota (MCP `stitch`).
+- [x] **T017** Flavors Android `develop` / `homolog` / `prod` (plan §1.3): `productFlavors`, `FlavorConfig`, banner Dev/Homolog. Mesmo `applicationId` e mesmo Firebase. Sem `applicationIdSuffix`. Depois disto: `flutter run --flavor develop --dart-define=FLAVOR=develop`.
 
 ---
 

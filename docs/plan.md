@@ -47,7 +47,8 @@ Sem `freezed`, `json_serializable`, Riverpod, Bloc, Hive, Dio.
 | Acesso do agente | MCP `stitch` (`https://stitch.googleapis.com/mcp`) |
 | Config local | `.cursor/mcp.json` (gitignored); template em `.cursor/mcp.json.example` |
 | Credencial | `STITCH_API_KEY` no ambiente / Cursor; **nunca** no repo nem em `docs/` |
-| Artefatos úteis | screenshot do frame, HTML, `DESIGN.md` |
+| Artefatos úteis | screenshot do frame, HTML, [`docs/stitch/DESIGN.md`](stitch/DESIGN.md) |
+| Projeto Stitch | Andenken Flashcards (`projects/10397297006861135646`) |
 | Artefato proibido em `lib/` | export Flutter/React/HTML do Stitch |
 
 #### Fluxo por tela
