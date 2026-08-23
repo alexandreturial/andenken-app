@@ -46,3 +46,7 @@ app.*.map.json
 
 # Cursor MCP (API keys locais). Template: .cursor/mcp.json.example
 .cursor/mcp.json
+
+# Firebase
+android/andenken_app_android.iml
+.metadata
