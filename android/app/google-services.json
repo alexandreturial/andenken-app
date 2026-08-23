@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "361762132325",
+    "project_id": "andenken-ed808",
+    "storage_bucket": "andenken-ed808.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:361762132325:android:744c1d0db4488964c6118c",
+        "android_client_info": {
+          "package_name": "com.andenken.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB9PcbPP42y_yR1pPlXje1ewc4FTgaX3So"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
