@@ -50,3 +50,7 @@ app.*.map.json
 # Firebase
 android/andenken_app_android.iml
 .metadata
+
+
+.cursor
+android/app/google-services.json

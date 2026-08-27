@@ -21,14 +21,14 @@ class FlavorConfig {
   bool get showFlavorBanner => !isProd;
 
   String get bannerLabel => switch (flavor) {
-        AppFlavor.develop => 'DEV',
-        AppFlavor.homolog => 'HML',
-        AppFlavor.prod => '',
-      };
+    AppFlavor.develop => 'DEV',
+    AppFlavor.homolog => 'HML',
+    AppFlavor.prod => '',
+  };
 
   String get displayName => switch (flavor) {
-        AppFlavor.develop => 'Andenken Dev',
-        AppFlavor.homolog => 'Andenken Homolog',
-        AppFlavor.prod => 'Andenken',
-      };
+    AppFlavor.develop => 'Andenken Dev',
+    AppFlavor.homolog => 'Andenken Homolog',
+    AppFlavor.prod => 'Andenken',
+  };
 }

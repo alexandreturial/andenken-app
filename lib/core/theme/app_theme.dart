@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
 
 /// Tokens do Stitch *Andenken Flashcards* (`docs/stitch/DESIGN.md`).
 /// Dark-mode-first. Não misturar export Flutter do Stitch em `lib/`.
@@ -43,22 +42,30 @@ abstract class AppTheme {
         ),
       ),
       inputDecorationTheme: InputDecorationTheme(
-        filled: false,
+        filled: true,
+        fillColor: AppColors.surfaceContainerHighest,
         contentPadding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.gutter,
           vertical: AppSpacing.stackSm,
         ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.button),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
+          borderSide: const BorderSide(
+            color: AppColors.surfaceContainerHighest,
+          ),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.button),
-          borderSide: const BorderSide(color: AppColors.outlineVariant),
+          borderSide: const BorderSide(
+            color: AppColors.surfaceContainerHighest,
+          ),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.button),
-          borderSide: const BorderSide(color: AppColors.gold, width: 1),
+          borderSide: const BorderSide(
+            color: AppColors.secondaryContainer,
+            width: 1,
+          ),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(AppRadius.button),
@@ -86,9 +93,7 @@ abstract class AppTheme {
         ),
       ),
       textButtonTheme: TextButtonThemeData(
-        style: TextButton.styleFrom(
-          foregroundColor: AppColors.primary,
-        ),
+        style: TextButton.styleFrom(foregroundColor: AppColors.primary),
       ),
       cardTheme: CardThemeData(
         color: AppColors.surfaceContainerLow,
@@ -221,57 +226,86 @@ abstract class AppSpacing {
 }
 
 abstract class AppTypography {
-  static TextStyle get headlineLg => GoogleFonts.hankenGrotesk(
-        fontSize: 32,
-        fontWeight: FontWeight.w700,
-        height: 40 / 32,
-        letterSpacing: -0.02 * 32,
-      );
+  static const String headlineFamily = 'Hanken Grotesk';
+  static const String bodyFamily = 'Inter';
 
-  static TextStyle get headlineLgMobile => GoogleFonts.hankenGrotesk(
-        fontSize: 28,
-        fontWeight: FontWeight.w700,
-        height: 34 / 28,
-        letterSpacing: -0.01 * 28,
-      );
+  static const TextStyle headlineLg = TextStyle(
+    fontFamily: headlineFamily,
+    fontSize: 32,
+    fontWeight: FontWeight.w700,
+    height: 40 / 32,
+    letterSpacing: -0.02 * 32,
+  );
 
-  static TextStyle get headlineMd => GoogleFonts.hankenGrotesk(
-        fontSize: 24,
-        fontWeight: FontWeight.w600,
-        height: 32 / 24,
-      );
+  static const TextStyle headlineLgMobile = TextStyle(
+    fontFamily: headlineFamily,
+    fontSize: 28,
+    fontWeight: FontWeight.w700,
+    height: 34 / 28,
+    letterSpacing: -0.01 * 28,
+  );
 
-  static TextStyle get bodyLg => GoogleFonts.inter(
-        fontSize: 18,
-        fontWeight: FontWeight.w400,
-        height: 28 / 18,
-      );
+  static const TextStyle headlineMd = TextStyle(
+    fontFamily: headlineFamily,
+    fontSize: 24,
+    fontWeight: FontWeight.w600,
+    height: 32 / 24,
+  );
 
-  static TextStyle get bodyMd => GoogleFonts.inter(
-        fontSize: 16,
-        fontWeight: FontWeight.w400,
-        height: 24 / 16,
-      );
+  static const TextStyle bodyLg = TextStyle(
+    fontFamily: bodyFamily,
+    fontSize: 18,
+    fontWeight: FontWeight.w400,
+    height: 28 / 18,
+  );
 
-  static TextStyle get labelSm => GoogleFonts.inter(
-        fontSize: 12,
-        fontWeight: FontWeight.w600,
-        height: 16 / 12,
-        letterSpacing: 0.05 * 12,
-      );
+  static const TextStyle bodyMd = TextStyle(
+    fontFamily: bodyFamily,
+    fontSize: 16,
+    fontWeight: FontWeight.w400,
+    height: 24 / 16,
+  );
 
-  static TextTheme get textTheme => TextTheme(
-        headlineLarge: headlineLgMobile,
-        headlineMedium: headlineMd,
-        headlineSmall: headlineMd,
-        bodyLarge: bodyLg,
-        bodyMedium: bodyMd,
-        bodySmall: bodyMd,
-        labelSmall: labelSm,
-        labelMedium: bodyMd.copyWith(fontWeight: FontWeight.w600),
-        labelLarge: bodyMd.copyWith(fontWeight: FontWeight.w600),
-        titleLarge: headlineMd,
-        titleMedium: bodyLg.copyWith(fontWeight: FontWeight.w600),
-        titleSmall: bodyMd.copyWith(fontWeight: FontWeight.w600),
-      );
+  static const TextStyle labelSm = TextStyle(
+    fontFamily: bodyFamily,
+    fontSize: 12,
+    fontWeight: FontWeight.w600,
+    height: 16 / 12,
+    letterSpacing: 0.05 * 12,
+  );
+
+  static TextTheme get textTheme => const TextTheme(
+    headlineLarge: headlineLgMobile,
+    headlineMedium: headlineMd,
+    headlineSmall: headlineMd,
+    bodyLarge: bodyLg,
+    bodyMedium: bodyMd,
+    bodySmall: bodyMd,
+    labelSmall: labelSm,
+    labelMedium: TextStyle(
+      fontFamily: bodyFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      height: 24 / 16,
+    ),
+    labelLarge: TextStyle(
+      fontFamily: bodyFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      height: 24 / 16,
+    ),
+    titleLarge: headlineMd,
+    titleMedium: TextStyle(
+      fontFamily: bodyFamily,
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      height: 28 / 18,
+    ),
+    titleSmall: TextStyle(
+      fontFamily: bodyFamily,
+      fontSize: 16,
+      fontWeight: FontWeight.w600,
+      height: 24 / 16,
+    ),
+  );
 }

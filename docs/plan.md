@@ -1,7 +1,7 @@
 # Plan técnico — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.4.0
+> **Versão:** 1.5.0
 > **Produto:** [`spec.md`](spec.md)
 > **Princípios:** [`constitution.md`](constitution.md)
 
@@ -31,7 +31,8 @@ Este documento define *como* construir a v1. Não substitui o spec.
 | Pacote | Uso |
 |--------|-----|
 | `firebase_core` | Init |
-| `firebase_auth` | Email + senha |
+| `firebase_auth` | Email + senha e Google (`signInWithCredential`) |
+| `google_sign_in` | Seletor de conta Google no Android; só `lib/data/` |
 | `cloud_firestore` | Decks e Cards |
 | `provider` | DI |
 | `go_router` | Rotas + redirects de auth |
@@ -85,7 +86,7 @@ Fases 0–1 (Firebase, theme, router) não têm regra de domínio — TDD não s
 
 | Camada | TDD? | Como |
 |--------|------|------|
-| Domínio / use-cases | Sempre | `test/domain/` — `ApplySM2`, validações, `ReviewCard`, `ListDueCards` |
+| Domínio / use-cases | Sempre | `test/domain/` — `CardReview`, validações, `ReviewCard`, `ListDueCards` |
 | Notifiers de fluxo | Sempre | `test/presentation/` — sobretudo `StudyNotifier` (fila, fases, RN-S08) |
 | Repositórios Firebase | Não | Use-cases contra **fake** in-memory; SDK real só no device |
 | Telas Stitch | Não | Layout depois do verde; widget test só em redirect de auth e fases do estudo, se couber |
@@ -101,7 +102,7 @@ test/
     fake_deck_repository.dart
     fake_card_repository.dart
   domain/
-    apply_sm2_test.dart
+    card_review_test.dart
     end_of_local_day_test.dart
     usecases/
       ...
@@ -201,7 +202,7 @@ flowchart TB
 | Camada | Pode | Não pode |
 |--------|------|----------|
 | Presentation | Widgets, `ValueNotifier`, chamar use-cases | Fórmula SM-2, path Firestore |
-| Domain | Entidades, validação, `ApplySM2`, contratos | Import Flutter Material, Firebase |
+| Domain | Entidades, validação, `CardReview`, contratos | Import Flutter Material, Firebase |
 | Data | Mapear DTO ↔ entidade, SDK Firebase | Regra de intervalo/EF |
 
 O `domain` pode importar `foundation.dart` só se necessário para `DateTime`; preferir Dart puro.
@@ -222,6 +223,21 @@ lib/
       app_router.dart
     theme/
       app_theme.dart
+    widget/
+      atoms/
+        app_text.dart
+        app_button.dart
+        app_text_field.dart
+        app_card.dart
+      molecules/
+      organisms/
+      templates/
+        app_page_template.dart
+      pages/
+        route_stub_screen.dart
+        login_screen.dart
+        register_screen.dart
+        ...
     firebase/
       firebase_init.dart
   domain/
@@ -234,7 +250,7 @@ lib/
       deck_repository.dart
       card_repository.dart
     usecases/
-      apply_sm2.dart             # puro
+      card_review.dart           # puro (usa Sm2Policy)
       sign_in.dart
       sign_up.dart
       sign_out.dart
@@ -248,7 +264,10 @@ lib/
       update_card.dart
       delete_card.dart
       list_due_cards.dart
-      review_card.dart           # ApplySM2 + persistir
+      review_card.dart           # CardReview + persistir
+    sm2/
+      grade.dart
+      sm2_policy.dart
   data/
     dto/
       deck_dto.dart
@@ -259,22 +278,12 @@ lib/
       firestore_card_repository.dart
   presentation/
     auth/
-      login_screen.dart
-      register_screen.dart
       auth_notifier.dart
     decks/
-      deck_list_screen.dart
-      deck_form_screen.dart
-      deck_detail_screen.dart
       deck_list_notifier.dart
       deck_detail_notifier.dart
-    cards/
-      card_form_screen.dart
     study/
-      study_screen.dart
       study_notifier.dart
-    widgets/
-      ...
 
 test/
   fakes/
@@ -282,7 +291,7 @@ test/
     fake_deck_repository.dart
     fake_card_repository.dart
   domain/
-    apply_sm2_test.dart
+    card_review_test.dart
     end_of_local_day_test.dart
     usecases/
   presentation/
@@ -320,7 +329,7 @@ Leitura na UI: `context.read<ReviewCard>()` / `context.watch` só para serviços
 | `/decks/new` | `DeckFormScreen` (create) |
 | `/decks/:deckId` | `DeckDetailScreen` |
 | `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
-| `/decks/:deckId/cards/new` | `CardFormScreen` (create) |
+| `/decks/:deckId/cards/new` | `CardFormScreen` (create, lista de rascunhos; salvar todos) |
 | `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
 | `/decks/:deckId/study` | `StudyScreen` |
 
@@ -338,9 +347,20 @@ Deep links não são aceite da v1, mas as URLs acima já permitem.
 
 ### 6.1 Auth
 
-- `createUserWithEmailAndPassword` / `signInWithEmailAndPassword` / `signOut`
+- `createUserWithEmailAndPassword` / `signInWithEmailAndPassword` / `signInWithCredential(GoogleAuthProvider)` / `signOut`
+- `google_sign_in` no Android: seletor → `idToken` → `GoogleAuthProvider.credential`. Cancelar o seletor devolve `null` (não é erro).
+- `signOut` também chama `GoogleSignIn.signOut()` para o próximo toque mostrar o seletor.
 - `authStateChanges()` alimenta o router
 - Sem documento em `users/{uid}`
+- Pré-requisito: provider Google ligado no console; SHA-1/SHA-256 do debug no app Android; `google-services.json` com `oauth_client` (tipo 1 Android + tipo 3 Web). O Web client ID é o `serverClientId`.
+
+SHA do keystore de debug:
+
+```bash
+keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android
+```
+
+Colar SHA-1 e SHA-256 em Firebase → Project settings → app Android. Depois `flutterfire configure` (ou baixar de novo o `google-services.json`) até `oauth_client` deixar de ser `[]`.
 
 Mapeamento User:
 
@@ -378,8 +398,7 @@ Queries:
 
 - Listar Decks: `users/{uid}/decks` orderBy `createdAt`
 - Listar Cards: `users/{uid}/decks/{deckId}/cards` orderBy `createdAt`
-- Due: `cards` where `nextReviewAt <= endOfToday` orderBy `nextReviewAt`  
-  (índice composto se o Firestore pedir)
+- Due: `users/{uid}/decks/{deckId}/cards` where `nextReviewAt <= endOfLocalDay(now)` orderBy `nextReviewAt` (T063). Índice de campo único (automático). Desempate `createdAt` (RN-S02) no cliente. Se o console pedir composto, criar e colar o URL neste parágrafo.
 
 Delete em cascata: na v1, o use-case `DeleteDeck` lista os Cards e apaga um a um, depois o Deck. Sem Cloud Function.
 
@@ -401,6 +420,22 @@ service cloud.firestore {
 
 Validação de tamanho/tipos pode ser incrementada depois; a UI já valida. Sem regra, não há aceite de isolamento.
 
+Fonte publicada: [`firestore.rules`](../firestore.rules) (T003 / T047). Deploy: `firebase deploy --only firestore:rules`.
+
+#### Isolamento User A vs User B (T047, RN-D02)
+
+Não é teste unitário. O path `users/{uid}/...` só autoriza `request.auth.uid == uid`. `ListDecks` no app só consulta a coleção do user autenticado.
+
+Passe manual (mesmo device, duas contas; ou dois devices):
+
+1. Conta A: criar um Deck com nome único (ex.: `Alemão A1`).
+2. Logout. Entrar com a conta B.
+3. A lista de B **não** mostra `Alemão A1`. Criar um Deck `Francês` em B.
+4. Logout. Entrar de novo com A: só `Alemão A1`, sem `Francês`.
+5. (Opcional) Console Firebase / regras playground: autenticado como B, `get` em `users/{uidA}/decks/{deckId}` → `permission-denied`.
+
+O passe completo com duas contas na Fase 7 é T071.
+
 ### 6.4 Offline
 
 Persistência local padrão do Firestore no mobile. Sem fila própria. A UI trata falha de rede com mensagem; cache pode mostrar dados antigos.
@@ -409,7 +444,7 @@ Persistência local padrão do Firestore no mobile. Sem fila própria. A UI trat
 
 ## 7. Use-cases principais
 
-### `ApplySM2` (puro)
+### `CardReview` (puro)
 
 ```
 entrada: Card + grade (0–5)
@@ -417,12 +452,12 @@ saída:   Card com easeFactor, intervalDays, repetitions,
          nextReviewAt, lastReviewedAt, updatedAt
 ```
 
-Implementar a seção 6 de [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Sem I/O.
+Valida `Grade`, delega fórmulas a `Sm2Policy`, aplica timestamps. Sem I/O. Seção 6 de [`algoritmo-SM-2.md`](algoritmo-SM-2.md).
 
 ### `ReviewCard`
 
 1. Carrega Card (ou recebe o da fila).
-2. `ApplySM2`.
+2. `CardReview`.
 3. Persiste.
 4. Devolve o Card atualizado para o `StudyNotifier` decidir reenfileirar (`grade < 4`).
 
@@ -436,7 +471,7 @@ Use-cases finos em cima dos repositórios. Validação de nome/frente/verso no u
 
 | Notifier | Valor típico |
 |----------|----------------|
-| `AuthNotifier` | `{ idle \| loading \| error }` + ações login/register/logout |
+| `AuthNotifier` | `{ idle \| loading \| error }` + ações login/register/google/logout |
 | `DeckListNotifier` | `{ loading \| data \| error }` + lista + contagem due por deck |
 | `DeckDetailNotifier` | Deck + lista de Cards |
 | `StudyNotifier` | fila, índice, fase `front\|back\|done`, último grade |
@@ -456,7 +491,7 @@ O `StudyNotifier`:
 5. Se `grade >= 4`, não reenfileira.
 6. Fila vazia → `done`.
 
-`ApplySM2` atualiza `nextReviewAt` mesmo quando o card volta hoje (falha ou grade 3). A refila é **só de sessão**, não muda a regra de due do dia seguinte.
+`CardReview` atualiza `nextReviewAt` mesmo quando o card volta hoje (falha ou grade 3). A refila é **só de sessão**, não muda a regra de due do dia seguinte.
 
 ---
 
@@ -465,12 +500,15 @@ O `StudyNotifier`:
 Fora do código, mas bloqueia o app:
 
 1. Criar projeto Firebase.
-2. Ativar Auth email/senha.
+2. Ativar Auth email/senha **e** o provider Google.
 3. Criar Firestore (modo produção + regras acima).
 4. `flutterfire configure` **somente Android** → `lib/firebase_options.dart` (não commitar service account).
 5. App Android no Firebase com o mesmo `applicationId` do Gradle:
    - Android: `com.turial_dev.andenken.app`
    - Sem app iOS, sem `GoogleService-Info.plist` na v1.
+6. SHA-1 e SHA-256 do keystore de debug no app Android (comando em §6.1). Sem SHA o Google Sign-In não emite `idToken`.
+7. Baixar de novo o `google-services.json` (ou `flutterfire configure`) até `oauth_client` ter tipo 1 (Android) e tipo 3 (Web). O Web client ID vira `serverClientId`; o plugin lê isso do JSON no Android. `GOOGLE_WEB_CLIENT_ID` via `--dart-define` é override opcional.
+8. SHA-256 de **release** só quando for gerar AAB.
 
 ```bash
 flutterfire configure --project=andenken-ed808 \
@@ -490,7 +528,7 @@ Os flavors `develop` / `homolog` / `prod` **não** mudam o projeto Firebase na v
 Resumo; o detalhe está em [`tasks.md`](tasks.md).
 
 1. Firebase + pacotes + flavors (`develop`/`homolog`/`prod`) + `core/` (init, theme a partir do Stitch, router vazio).
-2. Domain em TDD: entidades + fakes + testes vermelhos do SM-2 + `ApplySM2` verde.
+2. Domain em TDD: entidades + fakes + testes vermelhos do SM-2 + `CardReview` verde.
 3. Auth: use-cases TDD (fake) → Firebase → telas Stitch.
 4. Decks CRUD no mesmo ciclo.
 5. Cards CRUD no mesmo ciclo.

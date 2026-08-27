@@ -1,7 +1,7 @@
 # Spec — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.4.0
+> **Versão:** 1.5.0
 > **Princípios:** [`constitution.md`](constitution.md)
 > **Algoritmo:** [`algoritmo-SM-2.md`](algoritmo-SM-2.md)
 
@@ -22,7 +22,7 @@ Andenken é um app de flash cards para estudo pessoal. O usuário cria decks, ad
 | Ator | Descrição |
 |------|-----------|
 | Visitante | Não autenticado. Só acessa login e cadastro. |
-| User | Conta Firebase Auth (email + senha). Dono exclusivo dos próprios Decks e Cards. |
+| User | Conta Firebase Auth (email + senha ou Google). Dono exclusivo dos próprios Decks e Cards. |
 
 Não há papéis de admin, professor ou colaborador na v1.
 
@@ -83,7 +83,7 @@ O algoritmo fala `front`, `back`, `repetition`, `interval`. O domínio usa os no
 | `nextReviewAt` | `nextReviewAt` |
 | `lastReviewedAt` | `lastReviewedAt` |
 
-O use-case `ApplySM2` lê/escreve os campos do domínio. A UI nunca usa os nomes do algoritmo.
+O use-case `CardReview` lê/escreve os campos do domínio. A UI nunca usa os nomes do algoritmo.
 
 ### 3.5 Fora do modelo v1
 
@@ -118,6 +118,7 @@ User 1 ── * Deck 1 ── * Card
 | RN-A02 | Login exige email + senha corretos. Erro de credencial não revela se o email existe. |
 | RN-A03 | Sessão persiste até logout explícito (Firebase Auth persistence padrão no mobile). |
 | RN-A04 | Rotas autenticadas redirecionam Visitante para `/login`. Rotas de auth redirecionam User para `/decks`. |
+| RN-A05 | Continue with Google (Login e Cadastro) cria a conta se o email ainda não existir e entra. Cancelar o seletor Google não é erro e não navega. O mesmo use-case nas duas telas. |
 
 ### Deck
 
@@ -147,7 +148,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 | RN-S01 | Card está **due** quando `nextReviewAt <= agora` (início do dia local do dispositivo, ver §7). |
 | RN-S02 | A sessão de um Deck é a fila de Cards due daquele Deck, ordem `nextReviewAt` ascendente, desempate `createdAt`. |
 | RN-S03 | `grade` é inteiro em `[0, 5]`. Valor inválido é rejeitado antes do algoritmo. |
-| RN-S04 | Aplicar grade chama `ApplySM2` (função pura) e persiste o Card retornado. |
+| RN-S04 | Aplicar grade chama `CardReview` (função pura) e persiste o Card retornado. |
 | RN-S05 | `grade >= 3` incrementa `repetitions` e avança o intervalo (1 dia, depois 6, depois `round(intervalDays * easeFactor)`). |
 | RN-S06 | `grade < 3` zera `repetitions`, `intervalDays = 1`, aplica a fórmula do EF mesmo assim. |
 | RN-S07 | `easeFactor` nunca fica abaixo de `1.3`. |
@@ -169,6 +170,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 - [ ] Senhas diferentes bloqueiam o submit com mensagem.
 - [ ] Sucesso autentica e navega para a lista de Decks.
 - [ ] Email já cadastrado mostra erro inteligível.
+- [ ] Continue with Google cria a conta (se nova) e abre `/decks`.
 
 ### US-02 — Entrar e sair
 
@@ -179,6 +181,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 - [ ] Login válido abre `/decks`.
 - [ ] Credencial inválida mostra erro e não navega.
 - [ ] Logout volta para `/login` e impede voltar às rotas autenticadas pelo back.
+- [ ] Continue with Google (conta nova ou já existente) abre `/decks`. Cancelar o seletor permanece na tela sem erro.
 
 ### US-03 — CRUD de Deck
 
@@ -200,7 +203,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 **Aceite:**
 
 - [ ] Dentro do Deck, lista de Cards mostra `frontText`.
-- [ ] Criar exige frente e verso.
+- [ ] Criar exige frente e verso. Em `/decks/:deckId/cards/new` o User preenche uma lista de forms (frente/verso por card), pode adicionar/remover rascunhos e salva todos de uma vez. Editar continua um Card por vez.
 - [ ] Editar persiste frente/verso sem zerar SM-2.
 - [ ] Apagar pede confirmação e remove só aquele Card.
 - [ ] Card novo entra como due na próxima sessão.
@@ -241,7 +244,7 @@ Rotas autenticadas exigem User. Rotas `/login` e `/register` exigem Visitante.
 | `/decks/new` | Form criar Deck | User |
 | `/decks/:deckId` | Detalhe: lista de Cards + ações + CTA estudar | User |
 | `/decks/:deckId/edit` | Form renomear Deck | User |
-| `/decks/:deckId/cards/new` | Form criar Card | User |
+| `/decks/:deckId/cards/new` | Form criar Cards (lista de rascunhos; salvar todos) | User |
 | `/decks/:deckId/cards/:cardId/edit` | Form editar Card | User |
 | `/decks/:deckId/study` | Sessão SM-2 | User |
 
@@ -253,8 +256,8 @@ Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 
 | Tela no Stitch (nome exato) | Rota | Screen / estado |
 |-----------------------------|------|-----------------|
-| *(ainda sem frame)* | `/login` | `LoginScreen` |
-| *(ainda sem frame)* | `/register` | `RegisterScreen` |
+| Login | `/login` | `LoginScreen` |
+| Register | `/register` | `RegisterScreen` |
 | Lista de Decks (Clean) | `/decks` | `DeckListScreen` |
 | Lista de Decks | `/decks` | variante mais densa; preferir Clean |
 | *(empty state ainda sem frame)* | `/decks` | empty state |
@@ -262,14 +265,15 @@ Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 | *(ainda sem frame)* | `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
 | Visualização de Card | `/decks/:deckId` | `DeckDetailScreen` (aproxima; não há “detalhe do deck”) |
 | *(empty state ainda sem frame)* | `/decks/:deckId` | empty state |
-| Cadastrar Múltiplos Cards (Clean) | `/decks/:deckId/cards/new` | `CardFormScreen` (create; spec é 1 card, não lote) |
+| Cadastrar Múltiplos Cards (Dark) | `/decks/:deckId/cards/new` | `CardFormScreen` (lista de forms; salvar todos / add / remove). Sem Deck Name, Live Preview nem bottom nav. Edit é 1 card. |
+| Cadastrar Múltiplos Cards (Clean) | `/decks/:deckId/cards/new` | variante sequencial; preferir Dark |
 | Cadastrar Decks e Cards | `/decks/new` + cards | fluxo combinado; v1 separa as rotas |
 | *(ainda sem frame)* | `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
-| Estudo de Cards (Clean) | `/decks/:deckId/study` | fases `front` / `back` (texto) |
+| Estudo de Cards (Clean) | `/decks/:deckId/study` | `StudyScreen` fases `front` / `back` (texto). Stitch tem Flip + Hard/Good/Easy; spec vence: “Mostrar resposta” + 6 notas 0–5. Sem bottom nav, tags nem intervalos SM-2. |
 | *(fim / vazio ainda sem frame)* | `/decks/:deckId/study` | fases `done` / `empty` |
 | *(ainda sem frame)* | dialog | confirmar exclusão |
 
-**Fora da v1** (existem no Stitch, não implementar): Estudo de Cards - Áudio, Estudo de Cards - Imagem, Estudo de Cards - Áudio + Imagem, Andenken Logo (asset), frames `image.png`.
+**Fora da v1** (existem no Stitch, não implementar): Estudo de Cards - Áudio, Estudo de Cards - Imagem, Estudo de Cards - Áudio + Imagem, Andenken Logo (asset), frames `image.png`. No frame Login: Forgot? é só layout (reset de senha fora da v1). Continue with Google é aceite (RN-A05). No frame Register: Full Name não entra (User sem nome); confirmação de senha é do spec (US-01), não do Stitch; Continue with Google é aceite (RN-A05). No frame Lista de Decks (Clean) não há Logout; o spec exige sair da lista — T037 usa o ícone settings do Stitch.
 
 **Sessão de estudo (estados da tela):**
 
@@ -288,7 +292,7 @@ Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 ### 8.1 Auth
 
 ```
-Visitante → /login ou /register → Firebase Auth → /decks
+Visitante → /login ou /register → Firebase Auth (email/senha ou Google) → /decks
 User → logout → /login
 ```
 
@@ -307,7 +311,7 @@ User → logout → /login
   carregar due
   enquanto houver card na fila:
     frente → verso → grade
-    ApplySM2 + persistir
+    CardReview + persistir
     se grade < 4: reenfileirar no fim
   resumo → /decks/:id
 ```
@@ -331,7 +335,7 @@ User → logout → /login
 
 ## 10. Fora de escopo (v1)
 
-- Login social, anônimo, reset de senha avançado (pode existir o link nativo do Firebase depois; não é aceite)
+- Anônimo, Apple Sign-In, reset de senha avançado (pode existir o link nativo do Firebase depois; não é aceite)
 - Compartilhar / colaborar / decks públicos
 - Imagens, áudio, cloze, tags
 - Estatísticas além do resumo da sessão e do badge due
@@ -352,6 +356,6 @@ User → logout → /login
 2. Estuda com as 6 notas e o estado SM-2 persiste (reabrir o app mantém `nextReviewAt`).
 3. No dia seguinte (ou com relógio avançado em teste), o Card due reaparece.
 4. User B não lê dados do User A (regras de Firestore + teste manual com duas contas).
-5. Testes unitários do `ApplySM2` cobrem a tabela de exemplo e os casos de borda do spec do algoritmo — escritos **antes** da implementação (P-09).
+5. Testes unitários do `CardReview` cobrem a tabela de exemplo e os casos de borda do spec do algoritmo — escritos **antes** da implementação (P-09).
 6. Cada RN de domínio tem teste unitário (fake, sem Firebase) derivado do aceite.
 7. Cada rota da §7 é reconhecível frente ao frame Stitch correspondente (hierarquia, tokens, estados). Não é critério pixel-perfect.

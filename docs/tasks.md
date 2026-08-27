@@ -1,7 +1,7 @@
 # Tasks — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.4.0
+> **Versão:** 1.5.0
 > **Spec:** [`spec.md`](spec.md)
 > **Plan:** [`plan.md`](plan.md)
 > **Algoritmo:** [`algoritmo-SM-2.md`](algoritmo-SM-2.md)
@@ -36,68 +36,69 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fase 2 — Domínio e SM-2 (TDD, sem Firebase)
 
-- [ ] **T020** Entidade `User` (`id`, `email`, `createdAt`).
-- [ ] **T021** Entidade `Deck` (`id`, `userId`, `name`, `cards`, `createdAt`, `updatedAt?`).
-- [ ] **T022** Entidade `Card` com campos do [`spec.md`](spec.md) §3.3 e defaults de card novo (RN-C02).
-- [ ] **T023** Contratos `AuthRepository`, `DeckRepository`, `CardRepository` + fakes in-memory em `test/fakes/`.
-- [ ] **T024** Testes vermelhos da tabela §8 do algoritmo (6 revisões) em `test/domain/apply_sm2_test.dart`. `ApplySM2` ainda não existe ou falha.
-- [ ] **T025** Implementar `ApplySM2` (função pura, seção 6 do algoritmo) + validar `grade` em `[0, 5]` (RN-S03) até T024 verde.
-- [ ] **T026** Testes vermelhos dos casos de borda §9 (EF piso 1.3, grade 4 não muda EF, card novo due, revisão atrasada) → implementar até verde.
-- [ ] **T027** Teste vermelho: `grade < 3` zera `repetitions` e `intervalDays = 1`, mas aplica EF → verde.
-- [ ] **T028** Teste vermelho de `endOfLocalDay(DateTime)` (spec §7, um fuso fixo) → helper único até verde.
-- [ ] **T029** Refactor do SM-2 sem mudar testes; `flutter test test/domain` verde.
+- [x] **T020** Entidade `User` (`id`, `email`, `createdAt`).
+- [x] **T021** Entidade `Deck` (`id`, `userId`, `name`, `cards`, `createdAt`, `updatedAt?`).
+- [x] **T022** Entidade `Card` com campos do [`spec.md`](spec.md) §3.3 e defaults de card novo (RN-C02).
+- [x] **T023** Contratos `AuthRepository`, `DeckRepository`, `CardRepository` + fakes in-memory em `test/fakes/`.
+- [x] **T024** Testes vermelhos da tabela §8 do algoritmo (6 revisões) em `test/domain/card_review_test.dart`. `CardReview` ainda não existe ou falha.
+- [x] **T025** Implementar `CardReview` (função pura, seção 6 do algoritmo) + validar `grade` em `[0, 5]` (RN-S03) até T024 verde.
+- [x] **T026** Testes vermelhos dos casos de borda §9 (EF piso 1.3, grade 4 não muda EF, card novo due, revisão atrasada) → implementar até verde.
+- [x] **T027** Teste vermelho: `grade < 3` zera `repetitions` e `intervalDays = 1`, mas aplica EF → verde.
+- [x] **T028** Teste vermelho de `endOfLocalDay(DateTime)` (spec §7, um fuso fixo) → helper único até verde.
+- [x] **T029** Refactor do SM-2 sem mudar testes; `flutter test test/domain` verde.
 
 ---
 
 ## Fase 3 — Auth
 
-- [ ] **T030** Testes vermelhos dos use-cases `SignIn`, `SignUp`, `SignOut`, `WatchCurrentUser` contra `FakeAuthRepository` (US-01, US-02, RN-A01–A03).
-- [ ] **T031** Implementar os use-cases até T030 verde.
-- [ ] **T032** `FirebaseAuthRepository` + mapeamento User (plan §6.1); registrar no `MultiProvider`.
-- [ ] **T033** Teste do `AuthNotifier` (loading / error / sucesso) contra fake → implementar notifier até verde.
-- [ ] **T034** `GoRouter.refreshListenable` no stream de Auth; redirects RN-A04 (widget test do redirect se couber).
-- [ ] **T035** `LoginScreen` no layout do frame Stitch "Login" (US-02). Não commitar export Flutter do Stitch.
-- [ ] **T036** `RegisterScreen` no layout do frame Stitch "Cadastro", com confirmação de senha (US-01).
-- [ ] **T037** Logout acessível a partir da lista de Decks; mensagens de rede/credencial sem vazar se o email existe (RN-A02).
+- [x] **T030** Testes vermelhos dos use-cases `SignIn`, `SignUp`, `SignOut`, `WatchCurrentUser` contra `FakeAuthRepository` (US-01, US-02, RN-A01–A03).
+- [x] **T031** Implementar os use-cases até T030 verde.
+- [x] **T032** `FirebaseAuthRepository` + mapeamento User (plan §6.1); registrar no `MultiProvider`.
+- [x] **T033** Teste do `AuthNotifier` (loading / error / sucesso) contra fake → implementar notifier até verde.
+- [x] **T034** `GoRouter.refreshListenable` no stream de Auth; redirects RN-A04 (widget test do redirect se couber).
+- [x] **T035** `LoginScreen` no layout do frame Stitch "Login" (US-02). Não commitar export Flutter do Stitch.
+- [x] **T036** `RegisterScreen` no layout do frame Stitch "Cadastro", com confirmação de senha (US-01).
+- [x] **T037** Logout acessível a partir da lista de Decks; mensagens de rede/credencial sem vazar se o email existe (RN-A02).
+- [x] **T038** Google OAuth (RN-A05): `SignInWithGoogle` + fake (TDD) → `FirebaseAuthRepository` + `google_sign_in` → ligar Continue with Google em Login e Register. Cancelar o seletor não é erro. `SignOut` também sai do Google. SHA-1/SHA-256 e provider Google no console (manual).
 
 ---
 
 ## Fase 4 — Decks
 
-- [ ] **T040** Testes vermelhos: `ListDecks`, `CreateDeck`, `RenameDeck`, `DeleteDeck` + RN-D01 (`name` 1–80, trim) contra fakes. `DeleteDeck` deve apagar os Cards da subcoleção (plan §6.2).
-- [ ] **T041** Implementar use-cases até T040 verde.
-- [ ] **T042** DTOs e `FirestoreDeckRepository` no path `users/{uid}/decks/{deckId}`.
-- [ ] **T043** Teste do `DeckListNotifier` (loading / data / error / empty) contra fake → notifier verde.
-- [ ] **T044** `DeckListScreen` no layout Stitch "Lista de decks" + empty state "Lista de decks vazia" + FAB (US-03, US-06 placeholder de badge).
-- [ ] **T045** `DeckFormScreen` nos frames "Novo deck" / "Renomear deck".
-- [ ] **T046** Dialog de confirmação no delete (frame Stitch "Confirmar exclusão", se houver).
-- [ ] **T047** Isolamento: User A não lista Decks de B (regra Firestore + teste manual — não é unitário).
+- [x] **T040** Testes vermelhos: `ListDecks`, `CreateDeck`, `RenameDeck`, `DeleteDeck` + RN-D01 (`name` 1–80, trim) contra fakes. `DeleteDeck` deve apagar os Cards da subcoleção (plan §6.2).
+- [x] **T041** Implementar use-cases até T040 verde.
+- [x] **T042** DTOs e `FirestoreDeckRepository` no path `users/{uid}/decks/{deckId}`.
+- [x] **T043** Teste do `DeckListNotifier` (loading / data / error / empty) contra fake → notifier verde.
+- [x] **T044** `DeckListScreen` no layout Stitch "Lista de decks" + empty state "Lista de decks vazia" + FAB (US-03, US-06 placeholder de badge).
+- [x] **T045** `DeckFormScreen` nos frames "Novo deck" / "Renomear deck".
+- [x] **T046** Dialog de confirmação no delete (frame Stitch "Confirmar exclusão", se houver).
+- [x] **T047** Isolamento: User A não lista Decks de B (regra Firestore + teste manual — não é unitário).
 
 ---
 
 ## Fase 5 — Cards
 
-- [ ] **T050** Testes vermelhos: `ListCards`, `CreateCard` (RN-C02), `UpdateCard` (RN-C03), `DeleteCard` (RN-C04), validação RN-C01 — contra `FakeCardRepository`.
-- [ ] **T051** Implementar use-cases até T050 verde.
-- [ ] **T052** DTOs e `FirestoreCardRepository` em `.../decks/{deckId}/cards/{cardId}`.
-- [ ] **T053** Teste do `DeckDetailNotifier` contra fakes → notifier verde.
-- [ ] **T054** `DeckDetailScreen` no frame Stitch "Detalhe do deck": lista `frontText`, CTA add, CTA estudar, editar/apagar Deck.
-- [ ] **T055** `CardFormScreen` nos frames "Novo card" / "Editar card".
-- [ ] **T056** Delete de Card com confirmação (RN-C04).
-- [ ] **T057** Empty state de Deck sem Cards (frame "Detalhe sem cards"); botão estudar desabilitado.
+- [x] **T050** Testes vermelhos: `ListCards`, `CreateCard` (RN-C02), `UpdateCard` (RN-C03), `DeleteCard` (RN-C04), validação RN-C01 — contra `FakeCardRepository`.
+- [x] **T051** Implementar use-cases até T050 verde.
+- [x] **T052** DTOs e `FirestoreCardRepository` em `.../decks/{deckId}/cards/{cardId}`.
+- [x] **T053** Teste do `DeckDetailNotifier` contra fakes → notifier verde.
+- [x] **T054** `DeckDetailScreen` no frame Stitch "Detalhe do deck": lista `frontText`, CTA add, CTA estudar, editar/apagar Deck.
+- [x] **T055** `CardFormScreen`: create é lista de forms (frame "Cadastrar Múltiplos Cards (Dark)"); salvar todos / add / remove; edit um Card.
+- [x] **T056** Delete de Card com confirmação (RN-C04).
+- [x] **T057** Empty state de Deck sem Cards (frame "Detalhe sem cards"); botão estudar desabilitado.
 
 ---
 
 ## Fase 6 — Estudo SM-2
 
-- [ ] **T060** Testes vermelhos de `ListDueCards` (RN-S01, RN-S02) contra fake + `endOfLocalDay` → implementar até verde.
-- [ ] **T061** Testes vermelhos de `ReviewCard`: chama `ApplySM2` e persiste (RN-S04) contra fake → implementar até verde.
-- [ ] **T062** Testes vermelhos do `StudyNotifier`: fases `front` / `back` / `done` / `empty`; RN-S08 (`grade < 4` reenfileira) → notifier verde.
-- [ ] **T063** Query Firestore `nextReviewAt <= endOfLocalDay`; criar índice se o console pedir; anotar no repo.
-- [ ] **T064** `StudyScreen` nos frames Stitch "Estudo — frente" / "Estudo — verso": revelar + 6 botões com rótulos do algoritmo §3 (spec vence se o Stitch tiver 4 botões).
-- [ ] **T065** Resumo ao terminar no frame "Estudo — fim" (quantos revisados) e volta ao Deck.
-- [ ] **T066** Empty state no frame "Estudo — vazio" (RN-S10).
-- [ ] **T067** Badge due na lista de Decks (US-06); atualiza após a sessão.
+- [x] **T060** Testes vermelhos de `ListDueCards` (RN-S01, RN-S02) contra fake + `endOfLocalDay` → implementar até verde.
+- [x] **T061** Testes vermelhos de `ReviewCard`: chama `CardReview` e persiste (RN-S04) contra fake → implementar até verde.
+- [x] **T062** Testes vermelhos do `StudyNotifier`: fases `front` / `back` / `done` / `empty`; RN-S08 (`grade < 4` reenfileira) → notifier verde.
+- [x] **T063** Query Firestore `nextReviewAt <= endOfLocalDay`; criar índice se o console pedir; anotar no repo.
+- [x] **T064** `StudyScreen` nos frames Stitch "Estudo — frente" / "Estudo — verso": revelar + 6 botões com rótulos do algoritmo §3 (spec vence se o Stitch tiver 4 botões).
+- [x] **T065** Resumo ao terminar no frame "Estudo — fim" (quantos revisados) e volta ao Deck.
+- [x] **T066** Empty state no frame "Estudo — vazio" (RN-S10).
+- [x] **T067** Badge due na lista de Decks (US-06); atualiza após a sessão.
 
 ---
 
@@ -114,7 +115,7 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fora desta lista (não fazer na v1)
 
-- ReviewLog, imagens, share, login social, web/iOS como alvo, soft delete, i18n extra, push.
+- ReviewLog, imagens, share, Apple/anônimo, web/iOS como alvo, soft delete, i18n extra, push.
 - Merge do export Flutter/HTML do Stitch em `lib/`.
 - Firebase emulator, mockito obrigatório, TDD de layout Stitch, meta de 100% coverage.
 - `GoogleService-Info.plist` / FlutterFire no iOS.

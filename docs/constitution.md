@@ -1,7 +1,7 @@
 # Constitution — Andenken
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.4.0
+> **Versão:** 1.5.0
 > **Produto:** Andenken — flash cards com CRUD + repetição espaçada SM-2
 
 Este documento é a fonte de princípios do projeto. `spec.md`, `plan.md` e `tasks.md` devem respeitá-lo. Em conflito, a constitution vence.
@@ -12,7 +12,7 @@ Este documento é a fonte de princípios do projeto. `spec.md`, `plan.md` e `tas
 
 Andenken é um app Flutter de flash cards. A v1 entrega:
 
-1. Autenticação por email e senha.
+1. Autenticação por email e senha e por Google no Android.
 2. CRUD privado de Decks e Cards.
 3. Sessão de estudo com o algoritmo SM-2 definido em [`algoritmo-SM-2.md`](algoritmo-SM-2.md).
 
@@ -60,7 +60,7 @@ Os campos do domínio usam os nomes da entidade (ex.: `frontText`, `intervalDays
 
 ### P-08 — Stitch é a fonte visual; o spec vence o comportamento
 
-Telas e tokens vêm do Google Stitch, acessado pelo MCP `stitch`. O agente **não** commita Flutter/HTML exportado do Stitch em `lib/`. Reescreve em `presentation/` + `app_theme.dart`, no contrato do spec (rotas, 6 notas 0–5, `ValueNotifier`, use-cases).
+Telas e tokens vêm do Google Stitch, acessado pelo MCP `stitch`. O agente **não** commita Flutter/HTML exportado do Stitch em `lib/`. Reescreve em `core/widget/` + `app_theme.dart`, no contrato do spec (rotas, 6 notas 0–5, `ValueNotifier`, use-cases).
 
 Se Stitch e spec divergirem, o spec vence; o frame no Stitch é atualizado depois. Figma não é fonte oficial da v1.
 
@@ -83,7 +83,7 @@ Use-cases contra **fakes** in-memory (interfaces da T023). Sem mock do SDK Fireb
 ## 3. Restrições da v1 (não negociáveis)
 
 - Backend: Firebase Auth + Cloud Firestore. Sem API própria.
-- Auth: email + senha. Sem Google, Apple, anônimo ou coleção `users`.
+- Auth: email + senha **e** Google no Android. Sem Apple, anônimo ou coleção `users`.
 - Estado: `ValueNotifier`. Sem Riverpod, Bloc ou GetX.
 - DI: `provider`.
 - Navegação: `go_router`.
@@ -116,6 +116,7 @@ Estas perguntas estavam abertas no planejamento. Ficam registradas aqui para nã
 | Offline | Persistência default do Firestore | Zero código extra; online-only quebraria o estudo no metrô |
 | Fonte visual | Google Stitch + MCP | Handoff com screenshot/HTML/`DESIGN.md`; spec manda no comportamento |
 | Testes | TDD no domínio e notifiers; fakes; UI depois do verde | P-01: sem emulator/coverage theater |
+| Login Google | Dentro (Android) | Mesmo botão cria ou entra (Firebase); Apple/anônimo fora |
 
 ---
 
