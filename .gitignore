@@ -43,6 +43,7 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+android/app/google-services.json
 
 # Cursor MCP (API keys locais). Template: .cursor/mcp.json.example
 .cursor/mcp.json
@@ -53,4 +54,3 @@ android/andenken_app_android.iml
 
 
 .cursor
-android/app/google-services.json
