@@ -25,7 +25,7 @@ void main() {
 
     expect(find.text('As senhas não coincidem.'), findsOneWidget);
     expect(find.text('Create Account'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('email já cadastrado mostra erro inteligível', (tester) async {
@@ -50,7 +50,7 @@ void main() {
 
     expect(find.text('Este email já está em uso.'), findsOneWidget);
     expect(find.text('Create Account'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('cadastro válido abre /decks', (tester) async {
@@ -69,7 +69,7 @@ void main() {
     await tester.tap(find.text('Register'));
     await tester.pumpAndSettle();
 
-    expect(find.text('My Decks'), findsOneWidget);
+    expect(find.text('Your Decks'), findsOneWidget);
     expect(find.text('Create Account'), findsNothing);
   });
 
@@ -90,7 +90,7 @@ void main() {
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
 
-    expect(find.text('My Decks'), findsOneWidget);
+    expect(find.text('Your Decks'), findsOneWidget);
     expect(find.text('Create Account'), findsNothing);
   });
 
@@ -116,7 +116,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('Create Account'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
     expect(
       find.text('Não foi possível conectar. Verifique a rede.'),
       findsNothing,

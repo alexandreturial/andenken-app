@@ -10,9 +10,12 @@ import 'core/theme/app_theme.dart';
 import 'data/firebase/firebase_auth_repository.dart';
 import 'data/firebase/firestore_card_repository.dart';
 import 'data/firebase/firestore_deck_repository.dart';
+import 'data/firebase/firestore_study_stats_repository.dart';
+import 'data/memory/memory_study_stats_repository.dart';
 import 'domain/repositories/auth_repository.dart';
 import 'domain/repositories/card_repository.dart';
 import 'domain/repositories/deck_repository.dart';
+import 'domain/repositories/study_stats_repository.dart';
 import 'domain/usecases/create_card.dart';
 import 'domain/usecases/create_deck.dart';
 import 'domain/usecases/delete_card.dart';
@@ -21,6 +24,7 @@ import 'domain/usecases/list_cards.dart';
 import 'domain/usecases/list_decks.dart';
 import 'domain/usecases/list_due_cards.dart';
 import 'domain/usecases/rename_deck.dart';
+import 'domain/usecases/persist_study_day.dart';
 import 'domain/usecases/review_card.dart';
 import 'domain/usecases/update_card.dart';
 import 'domain/usecases/sign_in.dart';
@@ -35,6 +39,7 @@ class MyApp extends StatefulWidget {
     this.authRepository,
     this.deckRepository,
     this.cardRepository,
+    this.studyStatsRepository,
     this.initialLocation,
   });
 
@@ -42,6 +47,7 @@ class MyApp extends StatefulWidget {
   final AuthRepository? authRepository;
   final DeckRepository? deckRepository;
   final CardRepository? cardRepository;
+  final StudyStatsRepository? studyStatsRepository;
   final String? initialLocation;
 
   @override
@@ -52,6 +58,7 @@ class _MyAppState extends State<MyApp> {
   late final AuthRepository _auth;
   late final DeckRepository _decks;
   late final CardRepository _cards;
+  late final StudyStatsRepository _studyStats;
   late final SignIn _signIn;
   late final SignUp _signUp;
   late final SignOut _signOut;
@@ -67,6 +74,7 @@ class _MyAppState extends State<MyApp> {
   late final UpdateCard _updateCard;
   late final DeleteCard _deleteCard;
   late final ReviewCard _reviewCard;
+  late final PersistStudyDay _persistStudyDay;
   late final AuthRefresh _authRefresh;
   late final GoRouter _router;
 
@@ -76,6 +84,16 @@ class _MyAppState extends State<MyApp> {
     _auth = widget.authRepository ?? FirebaseAuthRepository();
     _decks = widget.deckRepository ?? FirestoreDeckRepository();
     _cards = widget.cardRepository ?? FirestoreCardRepository();
+    final usingFakes =
+        widget.authRepository != null ||
+        widget.deckRepository != null ||
+        widget.cardRepository != null ||
+        widget.studyStatsRepository != null;
+    _studyStats =
+        widget.studyStatsRepository ??
+        (usingFakes
+            ? MemoryStudyStatsRepository()
+            : FirestoreStudyStatsRepository());
     _signIn = SignIn(_auth);
     _signUp = SignUp(_auth);
     _signOut = SignOut(_auth);
@@ -91,6 +109,7 @@ class _MyAppState extends State<MyApp> {
     _updateCard = UpdateCard(_cards);
     _deleteCard = DeleteCard(_cards);
     _reviewCard = ReviewCard(_cards);
+    _persistStudyDay = PersistStudyDay(_studyStats);
     _authRefresh = AuthRefresh(
       stream: _watchCurrentUser(),
       initial: _auth.currentUser,
@@ -115,6 +134,7 @@ class _MyAppState extends State<MyApp> {
         Provider<AuthRepository>.value(value: _auth),
         Provider<DeckRepository>.value(value: _decks),
         Provider<CardRepository>.value(value: _cards),
+        Provider<StudyStatsRepository>.value(value: _studyStats),
         Provider<SignIn>.value(value: _signIn),
         Provider<SignUp>.value(value: _signUp),
         Provider<SignOut>.value(value: _signOut),
@@ -130,6 +150,7 @@ class _MyAppState extends State<MyApp> {
         Provider<UpdateCard>.value(value: _updateCard),
         Provider<DeleteCard>.value(value: _deleteCard),
         Provider<ReviewCard>.value(value: _reviewCard),
+        Provider<PersistStudyDay>.value(value: _persistStudyDay),
       ],
       child: MaterialApp.router(
         title: FlavorConfig.current.displayName,

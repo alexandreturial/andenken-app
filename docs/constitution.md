@@ -1,10 +1,10 @@
 # Constitution — Andenken
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.5.0
+> **Versão:** 1.7.0
 > **Produto:** Andenken — flash cards com CRUD + repetição espaçada SM-2
 
-Este documento é a fonte de princípios do projeto. `spec.md`, `plan.md` e `tasks.md` devem respeitá-lo. Em conflito, a constitution vence.
+Este documento é a fonte de princípios do projeto. `spec.md`, `plan.md`, `tasks.md`, [`PRODUCT.md`](PRODUCT.md) e [`AGENTS.md`](../AGENTS.md) devem respeitá-lo. Em conflito, a constitution vence.
 
 ---
 
@@ -43,11 +43,15 @@ Estado de tela e de fluxo vive em `ValueNotifier` (ou `ValueNotifier<T>` + `Valu
 | Assunto | Fonte |
 |---------|--------|
 | Princípios e restrições | Este arquivo |
-| Produto, entidades, telas, aceite | [`spec.md`](spec.md) |
+| Visão, MVP, fora do MVP, roadmap | [`PRODUCT.md`](PRODUCT.md) |
+| Operação do agente | [`AGENTS.md`](../AGENTS.md) |
+| Contrato v1 (entidades, RN, telas, aceite) | [`spec.md`](spec.md) |
+| Feature nova (ainda não na v1) | [`specs/NNN-nome/`](../specs/README.md) |
 | Stack, pastas, Firebase, rotas, handoff Stitch | [`plan.md`](plan.md) |
-| Ordem de implementação | [`tasks.md`](tasks.md) |
+| Ordem da v1 | [`tasks.md`](tasks.md) |
 | Fórmulas e regras SM-2 | [`algoritmo-SM-2.md`](algoritmo-SM-2.md) |
 | Visual / design system | Google Stitch via MCP (projeto Andenken) |
+| Recorte Stitch vs spec | [`stitch/DIFF.md`](stitch/DIFF.md) |
 | Como testar | P-09 + [`plan.md`](plan.md) §1.2 |
 
 ### P-06 — Privacidade por padrão
@@ -60,7 +64,7 @@ Os campos do domínio usam os nomes da entidade (ex.: `frontText`, `intervalDays
 
 ### P-08 — Stitch é a fonte visual; o spec vence o comportamento
 
-Telas e tokens vêm do Google Stitch, acessado pelo MCP `stitch`. O agente **não** commita Flutter/HTML exportado do Stitch em `lib/`. Reescreve em `core/widget/` + `app_theme.dart`, no contrato do spec (rotas, 6 notas 0–5, `ValueNotifier`, use-cases).
+Telas e tokens vêm do Google Stitch, acessado pelo MCP `stitch`. O agente **não** commita Flutter/HTML exportado do Stitch em `lib/`. Reescreve em `core/widget/` + `app_theme.dart`, no contrato do spec (rotas, SM-2 0–5 no domínio com 4 opções na UI, `ValueNotifier`, use-cases).
 
 Se Stitch e spec divergirem, o spec vence; o frame no Stitch é atualizado depois. Figma não é fonte oficial da v1.
 
@@ -77,6 +81,10 @@ Regra de domínio e notifier de fluxo nascem assim:
 O spec é o oráculo. Não escrever teste que não aponte para aceite ou RN. UI Stitch só depois do use-case/notifier verde.
 
 Use-cases contra **fakes** in-memory (interfaces da T023). Sem mock do SDK Firebase. Sem TDD de layout pixel a pixel. Isolamento real entre users e passe US-01–US-06 continuam manuais (Fase 7).
+
+### P-10 — Clarify antes do plan
+
+Ambiguidade de produto não se resolve no código. Feature nova: perguntas fechadas em `specs/NNN-nome/clarify.md` **antes** do plan. Se o spec não define X, o agente pergunta ou anota a lacuna — não assume. Não reabrir RNs da v1 já fechadas na constitution §4 e no [`spec.md`](spec.md).
 
 ---
 
@@ -135,10 +143,12 @@ Estas perguntas estavam abertas no planejamento. Ficam registradas aqui para nã
 ## 6. Governança
 
 1. Mudança de princípio → atualizar este arquivo e a versão.
-2. Mudança de produto → `spec.md`.
-3. Mudança de stack/pastas/Firebase → `plan.md`.
-4. Mudança de ordem de build → `tasks.md`.
-5. Mudança de fórmula SM-2 → `algoritmo-SM-2.md` primeiro; depois o teste vermelho; depois o use-case.
-6. Mudança visual → atualizar o frame no Stitch e a tabela [`spec.md`](spec.md) §7.1; tokens novos vão para `plan.md` / `app_theme.dart`.
+2. Mudança de visão / fora do MVP / roadmap → [`PRODUCT.md`](PRODUCT.md).
+3. Mudança de contrato da v1 (entidade, RN, rota, aceite) → `spec.md`.
+4. Mudança de stack/pastas/Firebase → `plan.md`.
+5. Mudança de ordem da v1 → `tasks.md`.
+6. Mudança de fórmula SM-2 → `algoritmo-SM-2.md` primeiro; depois o teste vermelho; depois o use-case.
+7. Mudança visual da v1 → frame no Stitch e tabela [`spec.md`](spec.md) §7.1; tokens novos → `plan.md` / `app_theme.dart`; recorte → [`stitch/DIFF.md`](stitch/DIFF.md).
+8. Feature **nova** (não fatiar a v1) → pasta `specs/NNN-nome/` (`spec`, `clarify`, `plan` delta, `checklist`, `tasks` com US/RN/teste, `analyze`). Se a feature alterar entidade, RN ou stack da v1, atualizar também `spec.md` / `plan.md` / `algoritmo-SM-2.md` como acima. Tela nova: DIFF em `docs/stitch/NNN-nome/` se o frame não couber no DIFF da v1.
 
 Nenhuma implementação deve começar por uma tela se o use-case correspondente ainda não existir **e estiver verde** no domínio (exceto telas estáticas de auth, que só orquestram o repositório de Auth — o use-case de Auth ainda nasce em TDD contra fake).

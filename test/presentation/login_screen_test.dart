@@ -27,7 +27,7 @@ void main() {
 
     expect(find.text('Email ou senha incorretos.'), findsOneWidget);
     expect(find.text('ANDENKEN'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('email inexistente usa a mesma mensagem de credencial (RN-A02)', (
@@ -48,7 +48,7 @@ void main() {
 
     expect(find.text('Email ou senha incorretos.'), findsOneWidget);
     expect(find.text('ANDENKEN'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('falha de rede mostra mensagem de conexão e não navega', (
@@ -72,7 +72,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('ANDENKEN'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('login válido abre /decks', (tester) async {
@@ -90,8 +90,8 @@ void main() {
     await tester.tap(find.text('LOGIN'));
     await tester.pumpAndSettle();
 
-    expect(find.text('My Decks'), findsOneWidget);
-    expect(find.text('ANDENKEN'), findsNothing);
+    expect(find.text('Your Decks'), findsOneWidget);
+    expect(find.text('LOGIN'), findsNothing);
   });
 
   testWidgets('Continue with Google cria a conta e abre /decks', (
@@ -108,8 +108,8 @@ void main() {
     await tester.tap(find.text('Continue with Google'));
     await tester.pumpAndSettle();
 
-    expect(find.text('My Decks'), findsOneWidget);
-    expect(find.text('ANDENKEN'), findsNothing);
+    expect(find.text('Your Decks'), findsOneWidget);
+    expect(find.text('LOGIN'), findsNothing);
   });
 
   testWidgets('cancelar o Google permanece no login sem erro', (tester) async {
@@ -124,7 +124,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('ANDENKEN'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
     expect(
       find.text('Não foi possível conectar. Verifique a rede.'),
       findsNothing,
@@ -154,7 +154,7 @@ void main() {
         findsOneWidget,
       );
       expect(find.text('ANDENKEN'), findsOneWidget);
-      expect(find.text('My Decks'), findsNothing);
+      expect(find.text('Your Decks'), findsNothing);
     },
   );
 }

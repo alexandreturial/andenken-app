@@ -2,13 +2,14 @@ import 'package:andenken_app/domain/deck/deck_exception.dart';
 import 'package:andenken_app/domain/entities/card.dart';
 import 'package:andenken_app/domain/entities/deck.dart';
 import 'package:andenken_app/domain/usecases/delete_deck.dart';
+import 'package:andenken_app/domain/usecases/list_cards.dart';
 import 'package:andenken_app/domain/usecases/list_decks.dart';
-import 'package:andenken_app/domain/usecases/list_due_cards.dart';
 import 'package:andenken_app/presentation/decks/deck_list_notifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fakes/fake_card_repository.dart';
 import '../fakes/fake_deck_repository.dart';
+import '../fakes/fake_study_stats_repository.dart';
 
 void main() {
   late FakeDeckRepository decks;
@@ -22,7 +23,8 @@ void main() {
     notifier = DeckListNotifier(
       listDecks: ListDecks(decks),
       deleteDeck: DeleteDeck(decks, cards),
-      listDueCards: ListDueCards(cards),
+      listCards: ListCards(cards),
+      studyStats: FakeStudyStatsRepository(),
       userId: 'u1',
       clock: () => createdAt,
     );
@@ -96,6 +98,8 @@ void main() {
     await notifier.load();
 
     expect(notifier.value.dueCountByDeckId, {'d1': 1});
+    expect(notifier.value.masteryByDeckId['d1']?.percent, 50);
+    expect(notifier.value.masteryByDeckId['d1']?.total, 2);
   });
 
   test('falha de rede vai para error', () async {

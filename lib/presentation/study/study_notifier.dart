@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import '../../domain/card/card_exception.dart';
 import '../../domain/entities/card.dart';
 import '../../domain/usecases/list_due_cards.dart';
+import '../../domain/usecases/persist_study_day.dart';
 import '../../domain/usecases/review_card.dart';
 
 enum StudyPhase { loading, empty, front, back, done, error }
@@ -33,9 +34,11 @@ class StudyNotifier extends ValueNotifier<StudyViewState> {
     required ReviewCard reviewCard,
     required String userId,
     required String deckId,
+    PersistStudyDay? persistStudyDay,
     DateTime Function()? clock,
   }) : _listDueCards = listDueCards,
        _reviewCard = reviewCard,
+       _persistStudyDay = persistStudyDay,
        _userId = userId,
        _deckId = deckId,
        _clock = clock ?? DateTime.now,
@@ -43,6 +46,7 @@ class StudyNotifier extends ValueNotifier<StudyViewState> {
 
   final ListDueCards _listDueCards;
   final ReviewCard _reviewCard;
+  final PersistStudyDay? _persistStudyDay;
   final String _userId;
   final String _deckId;
   final DateTime Function() _clock;
@@ -113,6 +117,7 @@ class StudyNotifier extends ValueNotifier<StudyViewState> {
         grade: gradeValue,
         now: _clock(),
       );
+      await _persistStudyDay?.call(userId: _userId, now: _clock());
       _queue.removeAt(0);
       _reviewedIds.add(current.id);
       if (gradeValue < 4) {

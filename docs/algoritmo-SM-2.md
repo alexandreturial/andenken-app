@@ -40,6 +40,19 @@ O SM-2 é um algoritmo de **repetição espaçada** criado por Piotr Wozniak em 
 
 > **Regra:** `grade >= 3` → acerto (avança). `grade < 3` → falha (reinicia sequência).
 
+### 3.1 Mapeamento da UI (feature 004)
+
+A sessão **não** expõe as 6 notas. Quatro botões mapeiam para `q` e o use-case `CardReview` continua recebendo um inteiro em `[0, 5]`.
+
+| Botão | `grade` (q) | Refila na sessão (`q < 4`) |
+|-------|-------------|----------------------------|
+| Não lembro | `0` | sim |
+| Lembrei com dificuldade | `4` | não |
+| Lembrei | `5` | não |
+| Conheço | `5` | não |
+
+A UI não envia `1`, `2` nem `3`. “Lembrei” e “Conheço” são o mesmo `q=5`. As fórmulas das seções 4–6 não mudam.
+
 ---
 
 ## 4. Fórmulas

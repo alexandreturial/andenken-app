@@ -1,11 +1,13 @@
 import 'package:andenken_app/domain/card/card_exception.dart';
 import 'package:andenken_app/domain/entities/card.dart';
 import 'package:andenken_app/domain/usecases/list_due_cards.dart';
+import 'package:andenken_app/domain/usecases/persist_study_day.dart';
 import 'package:andenken_app/domain/usecases/review_card.dart';
 import 'package:andenken_app/presentation/study/study_notifier.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import '../fakes/fake_card_repository.dart';
+import '../fakes/fake_study_stats_repository.dart';
 
 void main() {
   late FakeCardRepository cards;
@@ -187,6 +189,27 @@ void main() {
 
     expect(notifier.value.phase, StudyPhase.done);
     expect(notifier.value.reviewedCount, 1);
+  });
+
+  test('grade persiste o dia de estudo (RN-K01)', () async {
+    final stats = FakeStudyStatsRepository();
+    notifier.dispose();
+    notifier = StudyNotifier(
+      listDueCards: ListDueCards(cards),
+      reviewCard: ReviewCard(cards),
+      persistStudyDay: PersistStudyDay(stats),
+      userId: 'u1',
+      deckId: 'd1',
+      clock: () => DateTime(2026, 8, 27, 10),
+    );
+    await seed(id: 'c1', nextReviewAt: DateTime(2026, 8, 1));
+    await notifier.load();
+    notifier.reveal();
+
+    await notifier.grade(5);
+
+    expect(stats.stored?.currentStreak, 1);
+    expect(stats.stored?.lastStudyLocalDate, '2026-08-27');
   });
 
   test('falha de rede no load vai para error', () async {

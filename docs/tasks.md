@@ -6,7 +6,9 @@
 > **Plan:** [`plan.md`](plan.md)
 > **Algoritmo:** [`algoritmo-SM-2.md`](algoritmo-SM-2.md)
 
-Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task de regra, teste vermelho → implementação → verde → refactor → UI Stitch. Não pular a fase 2 (SM-2 verde) para “já ir fazendo tela”.
+Checklist da **v1** (T000–T075), **encerrada**. Features novas → [`specs/`](../specs/README.md). Não reabrir esta lista para trabalho novo.
+
+Ordem = dependência. **TDD (P-09):** em toda task de regra, teste vermelho → implementação → verde → refactor → UI Stitch. Não pular a fase 2 (SM-2 verde) para “já ir fazendo tela”.
 
 ---
 
@@ -104,12 +106,12 @@ Checklist de implementação. Ordem = dependência. **TDD (P-09):** em toda task
 
 ## Fase 7 — Fechamento
 
-- [ ] **T070** Passe manual US-01 a US-06 no Android.
-- [ ] **T071** Duas contas: confirmar isolamento (critério de sucesso 4).
-- [ ] **T072** Matar o app e reabrir: `nextReviewAt` e EF persistidos (critério 2).
-- [ ] **T073** Conferir que a UI não contém fórmula SM-2.
-- [ ] **T074** Atualizar `README.md` do app: o que é Andenken, como configurar Firebase, link para `docs/`. Sem API key do Stitch.
-- [ ] **T075** Diff visual: cada rota vs screenshot Stitch da §7.1; listar o que ficou de fora de propósito.
+- [ ] **T070** Passe manual US-01 a US-06 no Android — checklist [`qa-manual.md`](qa-manual.md).
+- [ ] **T071** Duas contas: confirmar isolamento (critério de sucesso 4) — checklist [`qa-manual.md`](qa-manual.md).
+- [ ] **T072** Matar o app e reabrir: `nextReviewAt` e EF persistidos (critério 2) — checklist [`qa-manual.md`](qa-manual.md).
+- [x] **T073** Conferir que a UI não contém fórmula SM-2.
+- [x] **T074** Atualizar `README.md` do app: o que é Andenken, como configurar Firebase, link para `docs/`. Sem API key do Stitch.
+- [x] **T075** Diff visual: cada rota vs screenshot Stitch da §7.1; listar o que ficou de fora de propósito — [`stitch/DIFF.md`](stitch/DIFF.md).
 
 ---
 

@@ -84,7 +84,8 @@ void main() {
     await tester.tap(find.text('Estudar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Estudo'), findsWidgets);
+    expect(find.text('FLIP CARD'), findsOneWidget);
+    expect(find.text('Hallo'), findsOneWidget);
   });
 
   testWidgets('criar vários cards na lista e salvar todos (T055)', (

@@ -27,6 +27,8 @@ void main() {
         createdAt: createdAt,
       ),
     );
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MyApp(
         authRepository: auth,
@@ -53,18 +55,22 @@ void main() {
 
     await pumpStudy(tester, cards: cards);
 
-    expect(find.text('Estudo'), findsOneWidget);
+    expect(find.text('CURRENT DECK'), findsOneWidget);
     expect(find.text('Hallo'), findsOneWidget);
     expect(find.text('Olá'), findsNothing);
-    expect(find.text('Mostrar resposta'), findsOneWidget);
+    expect(find.text('FLIP CARD'), findsOneWidget);
+    expect(find.text('New Card'), findsOneWidget);
 
-    await tester.tap(find.text('Mostrar resposta'));
+    await tester.tap(find.text('FLIP CARD'));
     await tester.pumpAndSettle();
 
     expect(find.text('Olá'), findsOneWidget);
-    expect(find.text('Perfeita'), findsOneWidget);
+    expect(find.text('Não lembro'), findsOneWidget);
+    expect(find.text('Lembrei com dificuldade'), findsOneWidget);
+    expect(find.text('Lembrei'), findsOneWidget);
+    expect(find.text('Conheço'), findsOneWidget);
 
-    await tester.tap(find.byKey(const Key('grade-5')));
+    await tester.tap(find.text('Conheço'));
     await tester.pumpAndSettle();
 
     expect(find.text('Sessão concluída'), findsOneWidget);
@@ -94,10 +100,10 @@ void main() {
     await pumpStudy(tester, cards: cards);
 
     expect(find.text('Nada para revisar hoje'), findsOneWidget);
-    expect(find.text('Mostrar resposta'), findsNothing);
+    expect(find.text('FLIP CARD'), findsNothing);
   });
 
-  testWidgets('grade < 4 reapresenta o card na mesma sessão (RN-S08)', (
+  testWidgets('Não lembro reapresenta o card na mesma sessão (RN-U03)', (
     tester,
   ) async {
     final cards = FakeCardRepository();
@@ -113,13 +119,35 @@ void main() {
     );
 
     await pumpStudy(tester, cards: cards);
-    await tester.tap(find.text('Mostrar resposta'));
+    await tester.tap(find.text('FLIP CARD'));
     await tester.pumpAndSettle();
-    await tester.tap(find.byKey(const Key('grade-2')));
+    await tester.tap(find.text('Não lembro'));
     await tester.pumpAndSettle();
 
     expect(find.text('Hallo'), findsOneWidget);
     expect(find.text('Sessão concluída'), findsNothing);
-    expect(find.text('Mostrar resposta'), findsOneWidget);
+    expect(find.text('FLIP CARD'), findsOneWidget);
+  });
+
+  testWidgets('Lembrei com dificuldade encerra o card (q=4)', (tester) async {
+    final cards = FakeCardRepository();
+    await cards.create(
+      domain.Card.newCard(
+        id: 'c1',
+        deckId: 'd1',
+        frontText: 'Hallo',
+        backText: 'Olá',
+        createdAt: createdAt,
+      ),
+      userId: 'uid-alex@example.com',
+    );
+
+    await pumpStudy(tester, cards: cards);
+    await tester.tap(find.text('FLIP CARD'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Lembrei com dificuldade'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Sessão concluída'), findsOneWidget);
   });
 }

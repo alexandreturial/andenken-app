@@ -4,21 +4,26 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widget/atoms/app_button.dart';
-import '../../core/widget/atoms/app_card.dart';
 import '../../core/widget/atoms/app_text.dart';
-import '../../core/widget/templates/app_page_template.dart';
+import '../../core/widget/molecules/andenken_app_bar.dart';
+import '../../core/widget/molecules/app_bottom_nav.dart';
 import '../../domain/entities/card.dart' as domain;
+import '../../domain/entities/deck.dart';
 import '../../domain/repositories/auth_repository.dart';
+import '../../domain/repositories/deck_repository.dart';
+import '../../domain/study/pick_study_deck.dart';
+import '../../domain/usecases/list_decks.dart';
 import '../../domain/usecases/list_due_cards.dart';
+import '../../domain/usecases/list_cards.dart';
+import '../../domain/usecases/persist_study_day.dart';
 import '../../domain/usecases/review_card.dart';
+import '../../domain/study/deck_mastery.dart';
 import '../cards/card_error_message.dart';
-import 'study_grade_labels.dart';
+import 'study_choice.dart';
 import 'study_notifier.dart';
 
-/// Frame Stitch "Estudo de Cards (Clean)"
-/// (`.../screens/482d87635e234fc69320c6f194781900`).
-/// Dark tokens. Sem bottom nav, tags, categoria nem intervalos SM-2.
-/// Spec: 6 notas 0–5 e “Mostrar resposta”.
+/// Frame Stitch "Visualização de Card"
+/// (`.../screens/ebc67888eb24422cba69955b9bbeb31f`).
 class StudyScreen extends StatefulWidget {
   const StudyScreen({super.key, required this.deckId});
 
@@ -30,6 +35,7 @@ class StudyScreen extends StatefulWidget {
 
 class _StudyScreenState extends State<StudyScreen> {
   StudyNotifier? _notifier;
+  Deck? _deck;
 
   @override
   void didChangeDependencies() {
@@ -44,9 +50,18 @@ class _StudyScreenState extends State<StudyScreen> {
     _notifier = StudyNotifier(
       listDueCards: context.read<ListDueCards>(),
       reviewCard: context.read<ReviewCard>(),
+      persistStudyDay: context.read<PersistStudyDay>(),
       userId: user.id,
       deckId: widget.deckId,
     )..load();
+    context
+        .read<DeckRepository>()
+        .getById(userId: user.id, deckId: widget.deckId)
+        .then((deck) {
+          if (mounted) {
+            setState(() => _deck = deck);
+          }
+        });
   }
 
   @override
@@ -55,12 +70,30 @@ class _StudyScreenState extends State<StudyScreen> {
     super.dispose();
   }
 
-  void _leave() {
-    if (context.canPop()) {
-      context.pop();
-    } else {
-      context.go('/decks/${widget.deckId}');
+  Future<void> _openStudyTab() async {
+    final user = context.read<AuthRepository>().currentUser;
+    if (user == null) {
+      return;
     }
+    final decks = await context.read<ListDecks>()(userId: user.id);
+    final due = <String, int>{};
+    final now = DateTime.now();
+    for (final deck in decks) {
+      final cards = await context.read<ListCards>()(
+        userId: user.id,
+        deckId: deck.id,
+      );
+      due[deck.id] = DeckMastery.fromCards(cards, now).dueCount;
+    }
+    final picked = pickStudyDeck(decks, due);
+    if (!mounted || picked == null) {
+      context.go('/decks');
+      return;
+    }
+    if (picked.id == widget.deckId) {
+      return;
+    }
+    context.go('/decks/${picked.id}/study');
   }
 
   @override
@@ -69,25 +102,35 @@ class _StudyScreenState extends State<StudyScreen> {
     if (notifier == null) {
       return const SizedBox.shrink();
     }
-    return AppPageTemplate(
-      title: 'Estudo',
-      leading: IconButton(
-        tooltip: 'Fechar sessão',
-        onPressed: _leave,
-        icon: const Icon(Icons.close),
+    return Scaffold(
+      backgroundColor: AppColors.background,
+      appBar: const AndenkenAppBar(),
+      bottomNavigationBar: AppBottomNav(
+        active: AppBottomNavTab.study,
+        onDecks: () => context.go('/decks'),
+        onStudy: _openStudyTab,
+        onCreate: () => context.go('/decks/new'),
       ),
       body: ValueListenableBuilder(
         valueListenable: notifier,
         builder: (context, state, _) {
           return Align(
             child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 420),
-              child: _StudyBody(
-                state: state,
-                onReveal: notifier.reveal,
-                onGrade: notifier.grade,
-                onRetry: notifier.load,
-                onLeave: _leave,
+              constraints: const BoxConstraints(maxWidth: 720),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: AppSpacing.containerMargin,
+                ),
+                child: SizedBox.expand(
+                  child: _StudyBody(
+                    state: state,
+                    deckName: _deck?.name ?? 'Deck',
+                    onReveal: notifier.reveal,
+                    onGrade: notifier.grade,
+                    onRetry: notifier.load,
+                    onLeave: () => context.go('/decks'),
+                  ),
+                ),
               ),
             ),
           );
@@ -100,6 +143,7 @@ class _StudyScreenState extends State<StudyScreen> {
 class _StudyBody extends StatelessWidget {
   const _StudyBody({
     required this.state,
+    required this.deckName,
     required this.onReveal,
     required this.onGrade,
     required this.onRetry,
@@ -107,6 +151,7 @@ class _StudyBody extends StatelessWidget {
   });
 
   final StudyViewState state;
+  final String deckName;
   final VoidCallback onReveal;
   final Future<void> Function(int grade) onGrade;
   final Future<void> Function() onRetry;
@@ -143,6 +188,7 @@ class _StudyBody extends StatelessWidget {
       case StudyPhase.back:
         return _StudySession(
           state: state,
+          deckName: deckName,
           onReveal: onReveal,
           onGrade: onGrade,
         );
@@ -153,11 +199,13 @@ class _StudyBody extends StatelessWidget {
 class _StudySession extends StatelessWidget {
   const _StudySession({
     required this.state,
+    required this.deckName,
     required this.onReveal,
     required this.onGrade,
   });
 
   final StudyViewState state;
+  final String deckName;
   final VoidCallback onReveal;
   final Future<void> Function(int grade) onGrade;
 
@@ -174,29 +222,36 @@ class _StudySession extends StatelessWidget {
       children: [
         const SizedBox(height: AppSpacing.stackMd),
         Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
           children: [
-            const Expanded(
-              child: AppText(
-                'Daily Session',
-                variant: AppTextVariant.labelSm,
-                color: AppColors.onSurfaceVariant,
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const AppText(
+                    'CURRENT DECK',
+                    variant: AppTextVariant.labelSm,
+                    color: AppColors.onSurfaceVariant,
+                  ),
+                  AppText(deckName, variant: AppTextVariant.headlineMd),
+                ],
               ),
             ),
             AppText(
-              '${state.completedCount} / ${state.sessionSize}',
+              '${state.completedCount} / ${state.sessionSize} CARDS',
               variant: AppTextVariant.labelSm,
-              color: AppColors.primary,
+              color: AppColors.secondaryContainer,
             ),
           ],
         ),
-        const SizedBox(height: AppSpacing.stackSm),
+        const SizedBox(height: 8),
         ClipRRect(
           borderRadius: BorderRadius.circular(AppRadius.full),
           child: LinearProgressIndicator(
             value: state.completedCount / total,
-            minHeight: 8,
+            minHeight: 4,
             backgroundColor: AppColors.surfaceContainerHighest,
-            color: AppColors.gold,
+            color: AppColors.secondaryContainer,
           ),
         ),
         const SizedBox(height: AppSpacing.stackMd),
@@ -206,17 +261,17 @@ class _StudySession extends StatelessWidget {
         const SizedBox(height: AppSpacing.stackMd),
         if (!showingBack)
           AppButton(
-            label: 'Mostrar resposta',
+            label: 'FLIP CARD',
             leading: const Icon(
-              Icons.flip,
+              Icons.sync,
               size: 20,
-              color: AppColors.onSecondaryContainer,
+              color: AppColors.onSecondary,
             ),
             prominent: true,
             onPressed: onReveal,
           )
         else
-          _GradePad(onGrade: onGrade),
+          _ChoicePad(onGrade: onGrade),
         const SizedBox(height: AppSpacing.stackMd),
       ],
     );
@@ -231,103 +286,133 @@ class _FlashCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AppCard(
-      child: Center(
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              AppText(
-                card.frontText,
-                variant: AppTextVariant.headlineLg,
-                textAlign: TextAlign.center,
-              ),
-              if (showingBack) ...[
-                const SizedBox(height: AppSpacing.stackMd),
-                AppText(
-                  card.backText,
-                  variant: AppTextVariant.bodyLg,
-                  color: AppColors.onSurfaceVariant,
-                  textAlign: TextAlign.center,
-                ),
-              ],
-            ],
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerLow,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        border: Border.all(color: AppColors.outlineVariant),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.45),
+            blurRadius: 32,
+            offset: const Offset(0, 16),
           ),
-        ),
+        ],
+      ),
+      child: Stack(
+        children: [
+          if (card.lastReviewedAt == null)
+            const Positioned(top: 16, left: 16, child: _NewBadge()),
+          Center(
+            child: Padding(
+              padding: const EdgeInsets.all(AppSpacing.cardPadding),
+              child: SingleChildScrollView(
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    AppText(
+                      card.frontText,
+                      variant: AppTextVariant.headlineLg,
+                      textAlign: TextAlign.center,
+                    ),
+                    if (showingBack) ...[
+                      const SizedBox(height: AppSpacing.stackMd),
+                      AppText(
+                        card.backText,
+                        variant: AppTextVariant.bodyLg,
+                        color: AppColors.onSurfaceVariant,
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
 }
 
-class _GradePad extends StatelessWidget {
-  const _GradePad({required this.onGrade});
+class _NewBadge extends StatelessWidget {
+  const _NewBadge();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceContainerHighest,
+        borderRadius: BorderRadius.circular(AppRadius.full),
+        border: Border.all(color: AppColors.outlineVariant),
+      ),
+      child: const AppText(
+        'New Card',
+        variant: AppTextVariant.labelSm,
+        color: AppColors.secondaryContainer,
+      ),
+    );
+  }
+}
+
+class _ChoicePad extends StatelessWidget {
+  const _ChoicePad({required this.onGrade});
 
   final Future<void> Function(int grade) onGrade;
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return GridView.count(
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      crossAxisCount: 2,
+      crossAxisSpacing: AppSpacing.gutter,
+      mainAxisSpacing: AppSpacing.gutter,
+      childAspectRatio: 2.2,
       children: [
-        for (var row = 0; row < 2; row++) ...[
-          if (row > 0) const SizedBox(height: AppSpacing.stackSm),
-          Row(
-            children: [
-              for (var col = 0; col < 3; col++) ...[
-                if (col > 0) const SizedBox(width: AppSpacing.stackSm),
-                Expanded(
-                  child: _GradeButton(
-                    grade: row * 3 + col,
-                    onPressed: () => onGrade(row * 3 + col),
-                  ),
-                ),
-              ],
-            ],
+        for (final choice in StudyChoice.values)
+          _ChoiceTile(
+            choice: choice,
+            onPressed: () => onGrade(choice.sm2Grade),
           ),
-        ],
       ],
     );
   }
 }
 
-class _GradeButton extends StatelessWidget {
-  const _GradeButton({required this.grade, required this.onPressed});
+class _ChoiceTile extends StatelessWidget {
+  const _ChoiceTile({required this.choice, required this.onPressed});
 
-  final int grade;
+  final StudyChoice choice;
   final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
-    final fail = grade < 3;
-    return Semantics(
-      button: true,
-      label: 'Nota $grade',
-      child: Material(
-        color: AppColors.surfaceContainerHigh,
-        borderRadius: BorderRadius.circular(AppRadius.button),
-        child: InkWell(
-          key: Key('grade-$grade'),
-          onTap: onPressed,
-          borderRadius: BorderRadius.circular(AppRadius.button),
-          child: Padding(
-            padding: const EdgeInsets.symmetric(
-              vertical: AppSpacing.stackSm,
-              horizontal: 4,
+    final fail = choice == StudyChoice.forgotten;
+    return Material(
+      color: AppColors.surfaceContainer,
+      borderRadius: BorderRadius.circular(AppRadius.card),
+      child: InkWell(
+        key: Key('study-choice-${choice.name}'),
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppRadius.card),
+        child: Container(
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(AppRadius.card),
+            border: Border.all(
+              color: fail ? AppColors.errorContainer : AppColors.outlineVariant,
             ),
-            child: Column(
-              children: [
-                AppText(
-                  '$grade',
-                  variant: AppTextVariant.headlineMd,
-                  color: fail ? AppColors.primary : AppColors.gold,
-                ),
-                const SizedBox(height: 4),
-                AppText(
-                  labelForGrade(grade),
-                  variant: AppTextVariant.labelSm,
-                  color: AppColors.onSurfaceVariant,
-                  textAlign: TextAlign.center,
-                ),
-              ],
+          ),
+          alignment: Alignment.center,
+          padding: const EdgeInsets.all(8),
+          child: FittedBox(
+            fit: BoxFit.scaleDown,
+            child: AppText(
+              choice.label,
+              variant: AppTextVariant.bodyMd,
+              color: fail ? AppColors.error : AppColors.secondaryContainer,
+              textAlign: TextAlign.center,
             ),
           ),
         ),

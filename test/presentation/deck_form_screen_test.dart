@@ -37,7 +37,7 @@ void main() {
       findsOneWidget,
     );
     expect(find.text('Novo deck'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('criar deck válido volta à lista com o novo deck', (
@@ -59,7 +59,7 @@ void main() {
     await tester.tap(find.text('Save Deck'));
     await tester.pumpAndSettle();
 
-    expect(find.text('My Decks'), findsOneWidget);
+    expect(find.text('Your Decks'), findsOneWidget);
     expect(find.text('Alemão A1'), findsOneWidget);
     expect(find.text('Lista de decks vazia'), findsNothing);
   });

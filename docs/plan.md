@@ -65,7 +65,7 @@ Fallback se o MCP estiver offline ou sem auth: PNG + `DESIGN.md` anexados no cha
 #### Fora
 
 - Não gerar/implementar tela no Stitch que o spec não tenha (onboarding, share, stats).
-- Não trocar 6 grades por 4 botões Anki porque o Stitch gerou assim.
+- Não substituir o SM-2 0–5 no domínio pelos 3 botões Hard/Good/Easy do Stitch. A UI mapeia 4 opções (Não lembro / Lembrei com dificuldade / Lembrei / Conheço → 0 / 4 / 5 / 5); fórmulas intactas.
 - Não commitar a API key. Se vazou, rotacionar no Google Cloud.
 
 ### 1.2 Test-Driven Development
@@ -388,6 +388,9 @@ users/{uid}
       lastReviewedAt: timestamp | null
       createdAt: timestamp
       updatedAt: timestamp
+  meta/studyStats
+    currentStreak: number
+    lastStudyLocalDate: string (yyyy-MM-dd)
 ```
 
 O documento `users/{uid}` **não precisa existir**. É só prefixo de path. `userId` do Deck é o `{uid}` do path — não duplicar no documento, ou duplicar só se facilitar regra/query; preferir **não duplicar** `userId`/`deckId` no documento (já estão no path). No domínio, preencher `userId` e `deckId` ao hidratar o DTO.
@@ -413,6 +416,9 @@ service cloud.firestore {
       match /cards/{cardId} {
         allow read, write: if request.auth != null && request.auth.uid == uid;
       }
+    }
+    match /users/{uid}/meta/{docId} {
+      allow read, write: if request.auth != null && request.auth.uid == uid;
     }
   }
 }

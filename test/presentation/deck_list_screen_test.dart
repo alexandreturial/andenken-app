@@ -19,6 +19,8 @@ void main() {
   }) async {
     final auth = FakeAuthRepository();
     await auth.signUp(email: 'alex@example.com', password: 'secret1');
+    await tester.binding.setSurfaceSize(const Size(800, 1400));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(
       MyApp(
         authRepository: auth,
@@ -29,16 +31,17 @@ void main() {
     await tester.pumpAndSettle();
   }
 
-  testWidgets('lista vazia mostra CTA e FAB', (tester) async {
+  testWidgets('lista vazia mostra CTA e botão New Deck', (tester) async {
     await pumpLoggedIn(tester);
 
-    expect(find.text('My Decks'), findsOneWidget);
+    expect(find.text('Your Decks'), findsOneWidget);
     expect(find.text('Lista de decks vazia'), findsOneWidget);
     expect(find.text('Criar deck'), findsOneWidget);
+    expect(find.text('Daily Streak'), findsOneWidget);
     expect(find.byTooltip('Create New Deck'), findsOneWidget);
   });
 
-  testWidgets('lista com decks mostra nome e badge due placeholder', (
+  testWidgets('lista com decks mostra nome, mastery e cards left', (
     tester,
   ) async {
     final decks = FakeDeckRepository();
@@ -54,7 +57,9 @@ void main() {
     await pumpLoggedIn(tester, decks: decks);
 
     expect(find.text('Alemão A1'), findsOneWidget);
-    expect(find.text('0 due'), findsOneWidget);
+    expect(find.text('0 Cards'), findsOneWidget);
+    expect(find.text('Mastery: 0%'), findsOneWidget);
+    expect(find.text('0 cards left'), findsOneWidget);
     expect(find.text('Lista de decks vazia'), findsNothing);
   });
 
@@ -84,10 +89,12 @@ void main() {
 
     await pumpLoggedIn(tester, decks: decks, cards: cards);
 
-    expect(find.text('1 due'), findsOneWidget);
+    expect(find.text('1 Card'), findsOneWidget);
+    expect(find.text('Mastery: 0%'), findsOneWidget);
+    expect(find.text('1 cards left'), findsOneWidget);
   });
 
-  testWidgets('FAB abre o stub de novo deck', (tester) async {
+  testWidgets('botão New Deck abre o form', (tester) async {
     await pumpLoggedIn(tester);
 
     await tester.tap(find.byTooltip('Create New Deck'));
@@ -216,5 +223,66 @@ void main() {
       await cards.listByDeck(userId: 'uid-alex@example.com', deckId: 'd1'),
       isEmpty,
     );
+  });
+
+  testWidgets('toque no deck abre o estudo (RN-N02)', (tester) async {
+    final decks = FakeDeckRepository();
+    final cards = FakeCardRepository();
+    await decks.create(
+      Deck(
+        id: 'd1',
+        userId: 'uid-alex@example.com',
+        name: 'Alemão A1',
+        createdAt: createdAt,
+      ),
+    );
+    await cards.create(
+      domain.Card.newCard(
+        id: 'c1',
+        deckId: 'd1',
+        frontText: 'Hallo',
+        backText: 'Olá',
+        createdAt: createdAt,
+      ),
+      userId: 'uid-alex@example.com',
+    );
+
+    await pumpLoggedIn(tester, decks: decks, cards: cards);
+    await tester.tap(find.text('Alemão A1'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('FLIP CARD'), findsOneWidget);
+    expect(find.text('Hallo'), findsOneWidget);
+    expect(find.text('CURRENT DECK'), findsOneWidget);
+  });
+
+  testWidgets('menu Editar abre o detalhe do deck', (tester) async {
+    final decks = FakeDeckRepository();
+    await decks.create(
+      Deck(
+        id: 'd1',
+        userId: 'uid-alex@example.com',
+        name: 'Alemão A1',
+        createdAt: createdAt,
+      ),
+    );
+
+    await pumpLoggedIn(tester, decks: decks);
+    await tester.tap(find.byTooltip('Ações do deck'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Editar'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Nenhum card neste deck'), findsOneWidget);
+    expect(find.text('FLIP CARD'), findsNothing);
+  });
+
+  testWidgets('bottom nav Create abre Novo deck (RN-N01)', (tester) async {
+    await pumpLoggedIn(tester);
+
+    await tester.tap(find.text('Create'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Novo deck'), findsWidgets);
   });
 }

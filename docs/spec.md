@@ -1,7 +1,7 @@
 # Spec — Andenken v1
 
 > **Tipo:** Artefato de especificação (GitHub Spec Kit)
-> **Versão:** 1.5.0
+> **Versão:** 1.7.0
 > **Princípios:** [`constitution.md`](constitution.md)
 > **Algoritmo:** [`algoritmo-SM-2.md`](algoritmo-SM-2.md)
 
@@ -13,7 +13,7 @@ Andenken é um app de flash cards para estudo pessoal. O usuário cria decks, ad
 
 **Problema:** esquecer conteúdo estudado sem um intervalo de revisão.
 
-**Promessa da v1:** cadastrar material e estudá-lo no dia certo, com notas 0–5.
+**Promessa da v1:** cadastrar material e estudá-lo no dia certo, com SM-2 (domínio 0–5; UI com 4 opções).
 
 ---
 
@@ -156,6 +156,15 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 | RN-S09 | Revisão atrasada não recebe penalidade extra. Aplica SM-2 normalmente. |
 | RN-S10 | Deck sem Cards due mostra empty state de “nada para revisar hoje”. |
 
+### Lista e sessão (005)
+
+| ID | Regra |
+|----|--------|
+| RN-M01 | `masteryPercent = round(100 * naoDue / total)`; deck vazio → 0. “cards left” = due. |
+| RN-K01 | Streak em `users/{uid}/meta/studyStats`. Após review: mesmo dia local não muda; dia seguinte +1; pulou dia → 1. |
+| RN-N01 | Bottom nav: Decks `/decks`; Create `/decks/new`; Study = deck com mais due (empate `createdAt`). |
+| RN-N02 | Tap no card do deck abre `/decks/:id/study`. |
+
 ---
 
 ## 6. User stories e aceite
@@ -192,6 +201,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 - [ ] Lista vazia mostra CTA para criar o primeiro Deck.
 - [ ] Criar Deck com nome válido aparece na lista.
 - [ ] Nome vazio não salva.
+- [ ] Toque no card do deck abre a sessão de estudo; Editar no menu abre `/decks/:deckId`.
 - [ ] Renomear atualiza só aquele Deck.
 - [ ] Apagar pede confirmação; após confirmar, Deck e Cards somem.
 - [ ] User A não vê Decks do User B.
@@ -210,25 +220,26 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 
 ### US-05 — Estudar o Deck
 
-**Como** User, **quero** revisar os cards due com notas 0–5, **para** espaçar o estudo.
+**Como** User, **quero** revisar os cards due com 4 opções, **para** espaçar o estudo.
 
 **Aceite:**
 
 - [ ] A sessão mostra só Cards due daquele Deck.
-- [ ] Fluxo: frente → revelar verso → escolher grade 0–5.
-- [ ] Cada grade persiste o novo estado SM-2.
-- [ ] Cards com `grade < 4` reaparecem na mesma sessão até `grade >= 4`.
+- [ ] Fluxo: frente → FLIP CARD / Mostrar resposta → 4 opções (Não lembro / Lembrei com dificuldade / Lembrei / Conheço).
+- [ ] Cada opção persiste o `grade` SM-2 mapeado (0 / 4 / 5 / 5).
+- [ ] Cards com `grade < 4` reaparecem na mesma sessão até `grade >= 4` (na UI, só “Não lembro”).
 - [ ] Fila vazia encerra a sessão com resumo (quantos revisados).
 - [ ] Deck sem due não inicia sessão; mostra empty state.
 
 ### US-06 — Ver o que está due
 
-**Como** User, **quero** ver na lista de Decks quantos cards estão due, **para** saber o que estudar hoje.
+**Como** User, **quero** ver na lista de Decks mastery, cards left e streak, **para** saber o que estudar hoje.
 
 **Aceite:**
 
-- [ ] Cada item da lista mostra a contagem de Cards com `nextReviewAt` due.
+- [ ] Cada item mostra contagem total, mastery (RN-M01) e due (“cards left”).
 - [ ] A contagem muda depois de uma sessão.
+- [ ] Daily Streak reflete `studyStats` (RN-K01).
 
 ---
 
@@ -240,7 +251,7 @@ Rotas autenticadas exigem User. Rotas `/login` e `/register` exigem Visitante.
 |------|------|------|
 | `/login` | Login (email, senha) | Visitante |
 | `/register` | Cadastro | Visitante |
-| `/decks` | Lista de Decks + badge due + FAB criar | User |
+| `/decks` | Lista de Decks + mastery + streak + nav + CTA criar | User |
 | `/decks/new` | Form criar Deck | User |
 | `/decks/:deckId` | Detalhe: lista de Cards + ações + CTA estudar | User |
 | `/decks/:deckId/edit` | Form renomear Deck | User |
@@ -250,7 +261,7 @@ Rotas autenticadas exigem User. Rotas `/login` e `/register` exigem Visitante.
 
 ### 7.1 Mapeamento Stitch
 
-Fonte visual oficial: Google Stitch via MCP (`stitch`). Tokens em [`docs/stitch/DESIGN.md`](stitch/DESIGN.md) → `lib/core/theme/app_theme.dart`.
+Fonte visual oficial: Google Stitch via MCP (`stitch`). Tokens em [`docs/stitch/DESIGN.md`](stitch/DESIGN.md) → `lib/core/theme/app_theme.dart`. Recorte por rota (T075): [`docs/stitch/DIFF.md`](stitch/DIFF.md).
 
 Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 
@@ -258,30 +269,30 @@ Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 |-----------------------------|------|-----------------|
 | Login | `/login` | `LoginScreen` |
 | Register | `/register` | `RegisterScreen` |
-| Lista de Decks (Clean) | `/decks` | `DeckListScreen` |
-| Lista de Decks | `/decks` | variante mais densa; preferir Clean |
+| Lista de Decks | `/decks` | `DeckListScreen` (densa; frame `ffce7272f94244d2ae0940cd0baae1bd`) |
+| Lista de Decks (Clean) | `/decks` | variante light; 005 usa a densa |
 | *(empty state ainda sem frame)* | `/decks` | empty state |
 | Cadastrar Decks (Clean) | `/decks/new` | `DeckFormScreen` (create) |
 | *(ainda sem frame)* | `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
-| Visualização de Card | `/decks/:deckId` | `DeckDetailScreen` (aproxima; não há “detalhe do deck”) |
+| Visualização de Card | `/decks/:deckId/study` | `StudyScreen` (FLIP + 4 opções). Detalhe do deck continua lista em `/decks/:deckId`. |
 | *(empty state ainda sem frame)* | `/decks/:deckId` | empty state |
 | Cadastrar Múltiplos Cards (Dark) | `/decks/:deckId/cards/new` | `CardFormScreen` (lista de forms; salvar todos / add / remove). Sem Deck Name, Live Preview nem bottom nav. Edit é 1 card. |
 | Cadastrar Múltiplos Cards (Clean) | `/decks/:deckId/cards/new` | variante sequencial; preferir Dark |
 | Cadastrar Decks e Cards | `/decks/new` + cards | fluxo combinado; v1 separa as rotas |
 | *(ainda sem frame)* | `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
-| Estudo de Cards (Clean) | `/decks/:deckId/study` | `StudyScreen` fases `front` / `back` (texto). Stitch tem Flip + Hard/Good/Easy; spec vence: “Mostrar resposta” + 6 notas 0–5. Sem bottom nav, tags nem intervalos SM-2. |
+| Estudo de Cards (Clean) | `/decks/:deckId/study` | variante; 005 prefere Visualização de Card |
 | *(fim / vazio ainda sem frame)* | `/decks/:deckId/study` | fases `done` / `empty` |
 | *(ainda sem frame)* | dialog | confirmar exclusão |
 
-**Fora da v1** (existem no Stitch, não implementar): Estudo de Cards - Áudio, Estudo de Cards - Imagem, Estudo de Cards - Áudio + Imagem, Andenken Logo (asset), frames `image.png`. No frame Login: Forgot? é só layout (reset de senha fora da v1). Continue with Google é aceite (RN-A05). No frame Register: Full Name não entra (User sem nome); confirmação de senha é do spec (US-01), não do Stitch; Continue with Google é aceite (RN-A05). No frame Lista de Decks (Clean) não há Logout; o spec exige sair da lista — T037 usa o ícone settings do Stitch.
+**Fora da v1** (existem no Stitch, não implementar): Estudo de Cards - Áudio, Estudo de Cards - Imagem, Estudo de Cards - Áudio + Imagem, Andenken Logo (asset), frames `image.png`. No frame Login: Forgot? é só layout (reset de senha fora da v1). Continue with Google é aceite (RN-A05). No frame Register: Full Name não entra (User sem nome); confirmação de senha é do spec (US-01), não do Stitch; Continue with Google é aceite (RN-A05). No frame Lista de Decks o logout fica no `menu` (hamburger). `more_vert` no card do deck não está no frame (editar/renomear/apagar).
 
 **Sessão de estudo (estados da tela):**
 
 1. `loading` — carrega fila due.
 2. `empty` — nenhum due.
-3. `front` — mostra `frontText` + botão “Mostrar resposta”.
-4. `back` — mostra `frontText` + `backText` + 6 botões de grade (0–5) com o significado de [`algoritmo-SM-2.md`](algoritmo-SM-2.md) §3.
-5. `done` — resumo e voltar ao Deck.
+3. `front` — mostra `frontText` + botão “FLIP CARD” / “Mostrar resposta”.
+4. `back` — mostra `frontText` + `backText` + 4 botões (Não lembro / Lembrei com dificuldade / Lembrei / Conheço) mapeados em [`algoritmo-SM-2.md`](algoritmo-SM-2.md) §3.1.
+5. `done` — resumo; tab Decks volta à lista.
 
 **Due “hoje”:** comparar `nextReviewAt` com o fim do dia civil no fuso do dispositivo (`23:59:59.999` local). Cards com `nextReviewAt` neste instante ou no passado entram na fila.
 
@@ -353,7 +364,7 @@ User → logout → /login
 ## 11. Critérios de sucesso da v1
 
 1. User cria conta, um Deck e pelo menos um Card.
-2. Estuda com as 6 notas e o estado SM-2 persiste (reabrir o app mantém `nextReviewAt`).
+2. Estuda com as 4 opções e o estado SM-2 persiste (reabrir o app mantém `nextReviewAt`).
 3. No dia seguinte (ou com relógio avançado em teste), o Card due reaparece.
 4. User B não lê dados do User A (regras de Firestore + teste manual com duas contas).
 5. Testes unitários do `CardReview` cobrem a tabela de exemplo e os casos de borda do spec do algoritmo — escritos **antes** da implementação (P-09).

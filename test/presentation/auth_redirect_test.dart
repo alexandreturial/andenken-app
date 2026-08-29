@@ -17,7 +17,7 @@ void main() {
 
     expect(find.text('ANDENKEN'), findsOneWidget);
     expect(find.text('LOGIN'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
   });
 
   testWidgets('visitante permanece em /register', (tester) async {
@@ -47,8 +47,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('My Decks'), findsOneWidget);
-    expect(find.text('ANDENKEN'), findsNothing);
+    expect(find.text('Your Decks'), findsOneWidget);
+    expect(find.text('LOGIN'), findsNothing);
   });
 
   testWidgets('logout tira o user das rotas autenticadas', (tester) async {
@@ -59,16 +59,16 @@ void main() {
       MyApp(authRepository: auth, deckRepository: FakeDeckRepository()),
     );
     await tester.pumpAndSettle();
-    expect(find.text('My Decks'), findsOneWidget);
+    expect(find.text('Your Decks'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Settings'));
+    await tester.tap(find.byTooltip('Menu'));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Logout'));
     await tester.pumpAndSettle();
 
     expect(find.text('ANDENKEN'), findsOneWidget);
     expect(find.text('LOGIN'), findsOneWidget);
-    expect(find.text('My Decks'), findsNothing);
+    expect(find.text('Your Decks'), findsNothing);
 
     expect(tester.takeException(), isNull);
   });
