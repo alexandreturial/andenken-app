@@ -58,22 +58,8 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
     super.dispose();
   }
 
-  Future<void> _openNewCard() async {
-    await context.push('/decks/${widget.deckId}/cards/new');
-    if (mounted) {
-      await _notifier?.load();
-    }
-  }
-
-  Future<void> _openEditCard(domain.Card card) async {
-    await context.push('/decks/${widget.deckId}/cards/${card.id}/edit');
-    if (mounted) {
-      await _notifier?.load();
-    }
-  }
-
-  Future<void> _openRename(Deck deck) async {
-    await context.push('/decks/${deck.id}/edit');
+  Future<void> _openEdit() async {
+    await context.push('/decks/${widget.deckId}/edit');
     if (mounted) {
       await _notifier?.load();
     }
@@ -140,7 +126,7 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
           floatingActionButton: showFab
               ? FloatingActionButton(
                   tooltip: 'Create New Card',
-                  onPressed: _openNewCard,
+                  onPressed: _openEdit,
                   child: const Icon(Icons.add),
                 )
               : null,
@@ -156,7 +142,7 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
                     _DetailHeader(
                       onBack: _leave,
                       deck: deck,
-                      onRename: deck == null ? null : () => _openRename(deck),
+                      onRename: deck == null ? null : _openEdit,
                       onDelete: deck == null
                           ? null
                           : () => _confirmDeleteDeck(deck),
@@ -169,10 +155,10 @@ class _DeckDetailScreenState extends State<DeckDetailScreen> {
                         child: _DeckDetailBody(
                           state: state,
                           onRetry: notifier.load,
-                          onAdd: _openNewCard,
+                          onAdd: _openEdit,
                           onStudy: () =>
                               context.push('/decks/${widget.deckId}/study'),
-                          onEditCard: _openEditCard,
+                          onEditCard: (_) => _openEdit(),
                           onDeleteCard: _confirmDeleteCard,
                         ),
                       ),
@@ -259,7 +245,7 @@ class _DetailHeader extends StatelessWidget {
                     color: AppColors.onSurfaceVariant,
                   ),
                   onSelected: (value) {
-                    if (value == 'rename') {
+                    if (value == 'edit') {
                       onRename?.call();
                     } else if (value == 'delete') {
                       onDelete?.call();
@@ -267,8 +253,8 @@ class _DetailHeader extends StatelessWidget {
                   },
                   itemBuilder: (context) => const [
                     PopupMenuItem<String>(
-                      value: 'rename',
-                      child: Text('Renomear'),
+                      value: 'edit',
+                      child: Text('Editar'),
                     ),
                     PopupMenuItem<String>(
                       value: 'delete',

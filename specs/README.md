@@ -2,7 +2,7 @@
 
 A **v1 está congelada** em [`docs/spec.md`](../docs/spec.md), [`docs/plan.md`](../docs/plan.md), [`docs/tasks.md`](../docs/tasks.md) e [`docs/algoritmo-SM-2.md`](../docs/algoritmo-SM-2.md). Não fatiar auth / decks / estudo em `001`–`003`.
 
-Feature nova = pasta `specs/NNN-nome/` (primeiro número livre: **006**). Copia os templates, preenche, **clarify antes do plan**. Feature atual: [`005-stitch-lista-e-estudo/`](005-stitch-lista-e-estudo/).
+Feature nova = pasta `specs/NNN-nome/` (primeiro número livre: **007**). Copia os templates, preenche, **clarify antes do plan**. Feature atual: [`006-form-combinado-deck-cards/`](006-form-combinado-deck-cards/).
 
 ## Contrato com a v1
 

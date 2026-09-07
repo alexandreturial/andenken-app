@@ -2,7 +2,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../presentation/auth/login_screen.dart';
 import '../../presentation/auth/register_screen.dart';
-import '../../presentation/cards/card_form_screen.dart';
 import '../../presentation/decks/deck_detail_screen.dart';
 import '../../presentation/decks/deck_form_screen.dart';
 import '../../presentation/decks/deck_list_screen.dart';
@@ -61,18 +60,6 @@ GoRouter createAppRouter({
                 path: 'study',
                 builder: (context, state) =>
                     StudyScreen(deckId: state.pathParameters['deckId']!),
-              ),
-              GoRoute(
-                path: 'cards/new',
-                builder: (context, state) =>
-                    CardFormScreen(deckId: state.pathParameters['deckId']!),
-              ),
-              GoRoute(
-                path: 'cards/:cardId/edit',
-                builder: (context, state) => CardFormScreen(
-                  deckId: state.pathParameters['deckId']!,
-                  cardId: state.pathParameters['cardId'],
-                ),
               ),
             ],
           ),

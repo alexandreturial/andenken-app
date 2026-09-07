@@ -37,6 +37,51 @@ class Card {
     );
   }
 
+  factory Card.fromFile(Map<String, dynamic> json) {
+    final cardData = json['card'] as Map<String, dynamic>;
+    final notes = (json['notes'] as List<dynamic>?) ?? [];
+
+    String cleanText(dynamic rawValue) {
+      if (rawValue == null || rawValue is! String) return '';
+      return rawValue
+          // Remove toda a tag <audio>...</audio> e seu conteúdo interno
+          .replaceAll(
+            RegExp(r'<audio[\s\S]*?</audio>', caseSensitive: false),
+            '',
+          )
+          // Remove tags <br>, <br/> ou <br />
+          .replaceAll(RegExp(r'<br\s*/?>', caseSensitive: false), '')
+          .trim();
+    }
+
+    // Extrai o texto do note correspondente ou retorna vazio por padrão
+    final frontNote = notes.firstWhere(
+      (n) => n['fieldName'] == 'front',
+      orElse: () => null,
+    );
+    final backNote = notes.firstWhere(
+      (n) => n['fieldName'] == 'back',
+      orElse: () => null,
+    );
+    final createdAt = DateTime.now();
+
+    return Card(
+      id: cardData['id'].toString(),
+      deckId: cardData['deckId'].toString(),
+      frontText: cleanText(frontNote?['field'] ?? '').trim() ?? '',
+      backText: cleanText(backNote?['field'] ?? '').trim(),
+      repetitions: 0,
+      intervalDays: 0,
+      easeFactor: 2.5,
+      nextReviewAt: createdAt,
+      lastReviewedAt: null,
+      createdAt: createdAt,
+      updatedAt: DateTime.fromMillisecondsSinceEpoch(
+        cardData['dateUpdated'] as int,
+      ),
+    );
+  }
+
   final String id;
   final String deckId;
   final String frontText;

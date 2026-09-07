@@ -326,11 +326,9 @@ Leitura na UI: `context.read<ReviewCard>()` / `context.watch` só para serviços
 | `/login` | `LoginScreen` |
 | `/register` | `RegisterScreen` |
 | `/decks` | `DeckListScreen` |
-| `/decks/new` | `DeckFormScreen` (create) |
+| `/decks/new` | `DeckFormScreen` (create; nome + cards opcionais) |
 | `/decks/:deckId` | `DeckDetailScreen` |
-| `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
-| `/decks/:deckId/cards/new` | `CardFormScreen` (create, lista de rascunhos; salvar todos) |
-| `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
+| `/decks/:deckId/edit` | `DeckFormScreen` (edit; nome + cards) |
 | `/decks/:deckId/study` | `StudyScreen` |
 
 Redirect:

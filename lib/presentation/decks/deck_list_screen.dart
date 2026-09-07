@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 
 import '../../core/theme/app_theme.dart';
 import '../../core/widget/atoms/app_button.dart';
+import '../../core/widget/atoms/app_create_tile.dart';
 import '../../core/widget/atoms/app_text.dart';
 import '../../core/widget/molecules/andenken_app_bar.dart';
 import '../../core/widget/molecules/app_bottom_nav.dart';
@@ -199,7 +200,7 @@ class _DeckListBody extends StatelessWidget {
               color: AppColors.onPrimary,
               size: 20,
             ),
-            variant: AppButtonVariant.destructive,
+            variant: AppButtonVariant.primary,
             onPressed: onCreate,
           ),
         ),
@@ -312,22 +313,32 @@ class _DeckGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        for (var i = 0; i < decks.length; i++) ...[
-          if (i > 0) const SizedBox(height: AppSpacing.gutter),
-          _DeckTile(
-            deck: decks[i],
-            mastery:
-                masteryByDeckId[decks[i].id] ??
-                const DeckMastery(total: 0, dueCount: 0, percent: 0),
-            icon: _deckIcons[i % _deckIcons.length],
-            onStudy: () => onStudy(decks[i]),
-            onEdit: () => onEdit(decks[i]),
-            onRename: () => onRename(decks[i]),
-            onDelete: () => onDelete(decks[i]),
-          ),
-        ],
+        ListView.separated(
+          shrinkWrap: true,
+          itemCount: decks.length,
+          separatorBuilder: (context, index) =>
+              const SizedBox(height: AppSpacing.gutter),
+          itemBuilder: (context, index) {
+            final deck = decks[index];
+            return _DeckTile(
+              deck: deck,
+              mastery:
+                  masteryByDeckId[deck.id] ??
+                  const DeckMastery(total: 0, dueCount: 0, percent: 0),
+              icon: _deckIcons[index % _deckIcons.length],
+              onStudy: () => onStudy(deck),
+              onEdit: () => onEdit(deck),
+              onRename: () => onRename(deck),
+              onDelete: () => onDelete(deck),
+            );
+          },
+        ),
         const SizedBox(height: AppSpacing.gutter),
-        _CreateDeckTile(onCreate: onCreate),
+        AppCreateTile(
+          icon: Icons.add_circle,
+          title: 'Create New Deck',
+          onTap: onCreate,
+        ),
       ],
     );
   }
@@ -438,45 +449,6 @@ class _DeckTile extends StatelessWidget {
                   backgroundColor: AppColors.surfaceContainerHighest,
                   color: AppColors.secondaryContainer,
                 ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-
-class _CreateDeckTile extends StatelessWidget {
-  const _CreateDeckTile({required this.onCreate});
-
-  final VoidCallback onCreate;
-
-  @override
-  Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: onCreate,
-        borderRadius: BorderRadius.circular(AppRadius.card),
-        child: Container(
-          constraints: const BoxConstraints(minHeight: 160),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(AppRadius.card),
-            border: Border.all(
-              color: AppColors.outlineVariant,
-              style: BorderStyle.solid,
-            ),
-          ),
-          child: const Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.add_circle, color: AppColors.onSurfaceVariant),
-              SizedBox(height: 8),
-              AppText(
-                'Create New Deck',
-                variant: AppTextVariant.labelSm,
-                color: AppColors.onSurfaceVariant,
               ),
             ],
           ),

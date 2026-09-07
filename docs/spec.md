@@ -165,6 +165,13 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 | RN-N01 | Bottom nav: Decks `/decks`; Create `/decks/new`; Study = deck com mais due (empate `createdAt`). |
 | RN-N02 | Tap no card do deck abre `/decks/:id/study`. |
 
+### Form combinado (006)
+
+| ID | Regra |
+|----|--------|
+| RN-F01 | No form combinado: rascunho com frente e verso em branco é ignorado. Rascunho com só um lado preenchido (após trim) aborta o submit inteiro (nenhuma escrita). Card com os dois lados passa por RN-C01. Nome do deck continua RN-D01. Create só com nome grava deck vazio. |
+| RN-F02 | Cards só são criados em `/decks/new` e `/decks/:deckId/edit`. Não existem `/decks/:deckId/cards/new` nem `/decks/:deckId/cards/:cardId/edit`. |
+
 ---
 
 ## 6. User stories e aceite
@@ -199,7 +206,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 **Aceite:**
 
 - [ ] Lista vazia mostra CTA para criar o primeiro Deck.
-- [ ] Criar Deck com nome válido aparece na lista.
+- [ ] Criar Deck com nome válido aparece na lista. Cards no mesmo form são opcionais (RN-F01).
 - [ ] Nome vazio não salva.
 - [ ] Toque no card do deck abre a sessão de estudo; Editar no menu abre `/decks/:deckId`.
 - [ ] Renomear atualiza só aquele Deck.
@@ -213,7 +220,7 @@ Fonte normativa: [`algoritmo-SM-2.md`](algoritmo-SM-2.md). Resumo operacional:
 **Aceite:**
 
 - [ ] Dentro do Deck, lista de Cards mostra `frontText`.
-- [ ] Criar exige frente e verso. Em `/decks/:deckId/cards/new` o User preenche uma lista de forms (frente/verso por card), pode adicionar/remover rascunhos e salva todos de uma vez. Editar continua um Card por vez.
+- [ ] Cards entram só em `/decks/new` e `/decks/:deckId/edit` (lista de forms frente/verso; add/remove rascunhos novos). Frente e verso obrigatórios em rascunho preenchido; linha em branco é ignorada (RN-F01). Editar card existente é no form de editar o deck.
 - [ ] Editar persiste frente/verso sem zerar SM-2.
 - [ ] Apagar pede confirmação e remove só aquele Card.
 - [ ] Card novo entra como due na próxima sessão.
@@ -252,11 +259,9 @@ Rotas autenticadas exigem User. Rotas `/login` e `/register` exigem Visitante.
 | `/login` | Login (email, senha) | Visitante |
 | `/register` | Cadastro | Visitante |
 | `/decks` | Lista de Decks + mastery + streak + nav + CTA criar | User |
-| `/decks/new` | Form criar Deck | User |
+| `/decks/new` | Form criar Deck + cards opcionais | User |
 | `/decks/:deckId` | Detalhe: lista de Cards + ações + CTA estudar | User |
-| `/decks/:deckId/edit` | Form renomear Deck | User |
-| `/decks/:deckId/cards/new` | Form criar Cards (lista de rascunhos; salvar todos) | User |
-| `/decks/:deckId/cards/:cardId/edit` | Form editar Card | User |
+| `/decks/:deckId/edit` | Form editar Deck (nome + cards existentes + rascunhos) | User |
 | `/decks/:deckId/study` | Sessão SM-2 | User |
 
 ### 7.1 Mapeamento Stitch
@@ -272,14 +277,13 @@ Projeto: **Andenken Flashcards** (`projects/10397297006861135646`).
 | Lista de Decks | `/decks` | `DeckListScreen` (densa; frame `ffce7272f94244d2ae0940cd0baae1bd`) |
 | Lista de Decks (Clean) | `/decks` | variante light; 005 usa a densa |
 | *(empty state ainda sem frame)* | `/decks` | empty state |
-| Cadastrar Decks (Clean) | `/decks/new` | `DeckFormScreen` (create) |
-| *(ainda sem frame)* | `/decks/:deckId/edit` | `DeckFormScreen` (rename) |
+| Cadastrar Decks e Cards | `/decks/new` | `DeckFormScreen` (create; nome + tiles de card). Sem Live Preview, tags, imagens nem bottom nav. |
+| Cadastrar Decks (Clean) | `/decks/new` | variante só-nome; 006 usa o combinado |
+| *(ainda sem frame)* | `/decks/:deckId/edit` | `DeckFormScreen` (edit; mesmo form, cards existentes + rascunhos) |
 | Visualização de Card | `/decks/:deckId/study` | `StudyScreen` (FLIP + 4 opções). Detalhe do deck continua lista em `/decks/:deckId`. |
 | *(empty state ainda sem frame)* | `/decks/:deckId` | empty state |
-| Cadastrar Múltiplos Cards (Dark) | `/decks/:deckId/cards/new` | `CardFormScreen` (lista de forms; salvar todos / add / remove). Sem Deck Name, Live Preview nem bottom nav. Edit é 1 card. |
-| Cadastrar Múltiplos Cards (Clean) | `/decks/:deckId/cards/new` | variante sequencial; preferir Dark |
-| Cadastrar Decks e Cards | `/decks/new` + cards | fluxo combinado; v1 separa as rotas |
-| *(ainda sem frame)* | `/decks/:deckId/cards/:cardId/edit` | `CardFormScreen` (edit) |
+| Cadastrar Múltiplos Cards (Dark) | tiles no form combinado | referência visual de add/remove; sem rota própria |
+| Cadastrar Múltiplos Cards (Clean) | tiles no form combinado | variante sequencial; preferir Dark |
 | Estudo de Cards (Clean) | `/decks/:deckId/study` | variante; 005 prefere Visualização de Card |
 | *(fim / vazio ainda sem frame)* | `/decks/:deckId/study` | fases `done` / `empty` |
 | *(ainda sem frame)* | dialog | confirmar exclusão |
@@ -310,9 +314,9 @@ User → logout → /login
 ### 8.2 CRUD
 
 ```
-/decks → criar → /decks/:id → criar cards
-/decks/:id → editar nome | apagar deck
-/decks/:id → editar card | apagar card
+/decks → criar (nome + cards opcionais) → /decks
+/decks/:id → editar (nome + cards) | apagar deck
+/decks/:id → apagar card
 ```
 
 ### 8.3 Estudo

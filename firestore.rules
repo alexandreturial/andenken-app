@@ -1,4 +1,4 @@
-rules_version = '2';
+rules_version = '3';
 service cloud.firestore {
   match /databases/{database}/documents {
     // RN-D02 / RN-C05: só o dono (uid do path) lê e escreve.

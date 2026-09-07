@@ -90,7 +90,7 @@ void main() {
         deckId: 'd1',
         frontText: 'Später',
         backText: 'Depois',
-        nextReviewAt: createdAt.add(const Duration(days: 30)),
+        nextReviewAt: DateTime.now().add(const Duration(days: 30)),
         createdAt: createdAt,
         updatedAt: createdAt,
       ),

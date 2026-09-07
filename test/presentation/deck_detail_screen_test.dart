@@ -88,23 +88,25 @@ void main() {
     expect(find.text('Hallo'), findsOneWidget);
   });
 
-  testWidgets('criar vários cards na lista e salvar todos (T055)', (
+  testWidgets('criar vários cards no form do deck e salvar (T122)', (
     tester,
   ) async {
     await pumpDetail(tester, decks: await seedDeck());
 
     await tester.tap(find.byTooltip('Create New Card'));
     await tester.pumpAndSettle();
-    expect(find.text('Novo Card'), findsOneWidget);
+    expect(find.text('Editar deck'), findsOneWidget);
     expect(find.text('CARD 1'), findsOneWidget);
-    expect(find.text('CARD 2'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField).at(0), '  Hallo  ');
-    await tester.enterText(find.byType(TextField).at(1), '  Olá  ');
-    await tester.enterText(find.byType(TextField).at(2), 'Danke');
-    await tester.enterText(find.byType(TextField).at(3), 'Obrigado');
-    await tester.ensureVisible(find.text('Save All Cards'));
-    await tester.tap(find.text('Save All Cards'));
+    await tester.enterText(find.byType(TextField).at(1), '  Hallo  ');
+    await tester.enterText(find.byType(TextField).at(2), '  Olá  ');
+    await tester.ensureVisible(find.text('ADD ANOTHER CARD'));
+    await tester.tap(find.text('ADD ANOTHER CARD'));
+    await tester.pumpAndSettle();
+    await tester.enterText(find.byType(TextField).at(3), 'Danke');
+    await tester.enterText(find.byType(TextField).at(4), 'Obrigado');
+    await tester.ensureVisible(find.text('Save'));
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(find.text('Hallo'), findsOneWidget);
@@ -112,24 +114,26 @@ void main() {
     expect(find.text('Nenhum card neste deck'), findsNothing);
   });
 
-  testWidgets('adicionar e remover form da lista (T055)', (tester) async {
+  testWidgets('adicionar e remover rascunho no form do deck (T122)', (
+    tester,
+  ) async {
     await pumpDetail(tester, decks: await seedDeck());
 
     await tester.tap(find.byTooltip('Create New Card'));
     await tester.pumpAndSettle();
-    expect(find.byType(TextField), findsNWidgets(4));
+    expect(find.byType(TextField), findsNWidgets(3));
 
     await tester.ensureVisible(find.text('ADD ANOTHER CARD'));
     await tester.tap(find.text('ADD ANOTHER CARD'));
     await tester.pumpAndSettle();
-    expect(find.text('CARD 3'), findsOneWidget);
-    expect(find.byType(TextField), findsNWidgets(6));
+    expect(find.text('CARD 2'), findsOneWidget);
+    expect(find.byType(TextField), findsNWidgets(5));
 
     await tester.ensureVisible(find.byTooltip('Remove card').last);
     await tester.tap(find.byTooltip('Remove card').last);
     await tester.pumpAndSettle();
-    expect(find.text('CARD 3'), findsNothing);
-    expect(find.byType(TextField), findsNWidgets(4));
+    expect(find.text('CARD 2'), findsNothing);
+    expect(find.byType(TextField), findsNWidgets(3));
   });
 
   testWidgets('frente vazia não salva e permanece no form', (tester) async {
@@ -137,19 +141,19 @@ void main() {
 
     await tester.tap(find.text('Adicionar card'));
     await tester.pumpAndSettle();
-    await tester.enterText(find.byType(TextField).at(1), 'Olá');
-    await tester.ensureVisible(find.text('Save All Cards'));
-    await tester.tap(find.text('Save All Cards'));
+    await tester.enterText(find.byType(TextField).at(2), 'Olá');
+    await tester.ensureVisible(find.text('Save'));
+    await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 
     expect(
       find.text('Frente (1–500) e verso (1–2000) são obrigatórios.'),
       findsOneWidget,
     );
-    expect(find.text('Novo Card'), findsOneWidget);
+    expect(find.text('Editar deck'), findsOneWidget);
   });
 
-  testWidgets('editar persiste frente/verso (T055)', (tester) async {
+  testWidgets('editar persiste frente/verso (T122)', (tester) async {
     final decks = await seedDeck();
     final cards = FakeCardRepository();
     await cards.create(
@@ -176,12 +180,13 @@ void main() {
     await tester.tap(find.text('Editar'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Editar card'), findsOneWidget);
+    expect(find.text('Editar deck'), findsOneWidget);
     expect(find.text('Antigo'), findsOneWidget);
     expect(find.text('Old'), findsOneWidget);
 
-    await tester.enterText(find.byType(TextField).at(0), 'Hallo');
-    await tester.enterText(find.byType(TextField).at(1), 'Olá');
+    await tester.enterText(find.byType(TextField).at(1), 'Hallo');
+    await tester.enterText(find.byType(TextField).at(2), 'Olá');
+    await tester.ensureVisible(find.text('Save'));
     await tester.tap(find.text('Save'));
     await tester.pumpAndSettle();
 

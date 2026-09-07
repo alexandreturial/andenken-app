@@ -29,15 +29,15 @@ Marque no [`tasks.md`](tasks.md) T070–T072 só depois de passar no device.
 
 - [ ] Toque no card do deck abre o estudo; menu Editar abre o detalhe.
 - [ ] Lista vazia mostra CTA para criar o primeiro Deck.
-- [ ] Criar com nome válido aparece na lista.
+- [ ] Criar com nome válido aparece na lista (cards no form são opcionais).
 - [ ] Nome vazio não salva.
-- [ ] Renomear atualiza só aquele Deck.
+- [ ] Renomear / editar cards no form de `/decks/:id/edit` atualiza só aquele Deck.
 - [ ] Apagar pede confirmação; após confirmar, Deck e Cards somem.
 
 ### US-04 Card
 
 - [ ] Dentro do Deck, a lista mostra `frontText`.
-- [ ] Criar: lista de forms, add/remove, Save All; frente e verso obrigatórios.
+- [ ] Criar/editar cards no form do deck (add/remove rascunhos); frente e verso obrigatórios se o rascunho não estiver em branco.
 - [ ] Editar persiste frente/verso (o estado SM-2 não zera).
 - [ ] Apagar pede confirmação e remove só aquele Card.
 - [ ] Card novo aparece due na sessão (Estudar).

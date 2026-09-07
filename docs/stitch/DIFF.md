@@ -14,12 +14,10 @@ O app é **dark-mode-first**. Frames light do Stitch foram reescritos com os tok
 | `/register` | Register | `RegisterScreen` | Sem **Full Name** (User sem nome). Confirmação de senha é do spec, não do Stitch. Continue with Google entra (RN-A05). |
 | `/decks` | Lista de Decks (`ffce7272f94244d2ae0940cd0baae1bd`) | `DeckListScreen` | Dark densa. Mastery + cards left + streak + bottom nav. Sem FAB (botão + New Deck). Logout no `menu`. `more_vert` (editar) não está no frame. Variante Clean não usada. |
 | `/decks` (vazio) | *sem frame* | empty state | Copy local: “Lista de decks vazia” + Criar deck. |
-| `/decks/new` | Cadastrar Decks (Clean) | `DeckFormScreen` | Create. Sem fluxo combinado “Cadastrar Decks e Cards”. |
-| `/decks/:deckId/edit` | *sem frame* | `DeckFormScreen` | Rename reusa o form de create. |
-| `/decks/:deckId` | *sem frame de detalhe* | `DeckDetailScreen` | Lista `frontText` para editar. Não usa Visualização de Card. |
+| `/decks/new` | Cadastrar Decks e Cards | `DeckFormScreen` | Create combinado (006). Sem Live Preview, tags, imagens nem bottom nav. Tiles no estilo Cadastrar Múltiplos Cards (Dark). |
+| `/decks/:deckId/edit` | Cadastrar Decks e Cards | `DeckFormScreen` | Edit: nome + cards existentes (sem remover no form) + rascunhos novos. |
+| `/decks/:deckId` | *sem frame de detalhe* | `DeckDetailScreen` | Lista `frontText`. FAB / Adicionar / Editar abrem `/edit`. Não usa Visualização de Card. |
 | `/decks/:deckId` (vazio) | *sem frame* | empty state | “Nenhum card neste deck”; Estudar desabilitado. |
-| `/decks/:deckId/cards/new` | Cadastrar Múltiplos Cards (Dark) | `CardFormScreen` | Lista de rascunhos, add/remove, Save All. Sem Deck Name, Live Preview nem bottom nav. Variante Clean (sequencial) não usada. |
-| `/decks/:deckId/cards/:cardId/edit` | *sem frame* | `CardFormScreen` | Um card; sem add/remove. |
 | `/decks/:deckId/study` | Visualização de Card (`ebc67888eb24422cba69955b9bbeb31f`) | `StudyScreen` | FLIP CARD + 4 opções (não Hard/Good/Easy nem intervalos). Sem hint/tag. Bottom nav Study ativo. Tab Decks sai da sessão. |
 | `/decks/:deckId/study` | *sem frame* | `empty` / `done` | “Nada para revisar hoje”; resumo “N cards revisados”. |
 | dialogs | *sem frame* | `showConfirmDeleteDialog` | Apagar deck / card. |
